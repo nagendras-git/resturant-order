@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>OrderCheck — Restaurant Bill Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ── Tokens ── */
+:root {
+  --ink: #1a1209;
+  --paper: #f5f0e8;
+  --cream: #ede7d6;
+  --panel: #fff9f0;
+  --accent: #c8401a;
+  --gold: #d4a847;
+  --muted: #8a7d6b;
+  --success: #2e7d55;
+  --line: rgba(26,18,9,0.12);
+  --shadow: rgba(26,18,9,0.18);
+  --toggle-bg: #d4a847;
+}
+[data-theme="dark"] {
+  --ink: #f0e8d8;
+  --paper: #1a1510;
+  --cream: #251f17;
+  --panel: #201a12;
+  --accent: #e05a30;
+  --gold: #d4a847;
+  --muted: #9a8d7a;
+  --success: #3fa06a;
+  --line: rgba(240,232,216,0.10);
+  --shadow: rgba(0,0,0,0.45);
+  --toggle-bg: #3a3020;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'DM Mono', monospace;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  padding-bottom: env(safe-area-inset-bottom);
+  background-image: repeating-linear-gradient(
+    0deg, transparent, transparent 27px,
+    var(--line) 27px, var(--line) 28px
+  );
+  background-size: 100% 28px;
+  transition: background 0.3s, color 0.3s;
+}
+
+/* ── Header ── */
+header {
+  background: var(--ink);
+  color: var(--paper);
+  text-align: center;
+  padding: calc(2.5rem + env(safe-area-inset-top)) 1rem 2rem;
+  position: relative;
+  overflow: hidden;
+}
+header::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    45deg, transparent, transparent 10px,
+    rgba(255,255,255,0.025) 10px, rgba(255,255,255,0.025) 11px
+  );
+}
+header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  position: relative;
+}
+header h1 span { color: var(--gold); }
+header p {
+  margin-top: 0.4rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  position: relative;
+}
+.header-rule {
+  width: 60px; height: 2px;
+  background: var(--gold);
+  margin: 1rem auto 0;
+  position: relative;
+}
+
+/* ── Dark Mode Toggle ── */
+.dark-toggle {
+  position: absolute;
+  top: 1.2rem;
+  right: 1.2rem;
+  top: calc(1.2rem + env(safe-area-inset-top));
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.toggle-label {
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  user-select: none;
+}
+.toggle-switch {
+  position: relative;
+  width: 44px; height: 24px;
+  cursor: pointer;
+}
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-track {
+  position: absolute; inset: 0;
+  background: var(--toggle-bg);
+  border-radius: 999px;
+  border: 1.5px solid rgba(255,255,255,0.15);
+  transition: background 0.3s;
+}
+.toggle-thumb {
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 16px; height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.25s;
+  display: grid; place-items: center;
+  font-size: 10px;
+}
+.toggle-switch input:checked ~ .toggle-track { background: #3a3020; }
+.toggle-switch input:checked ~ .toggle-thumb { transform: translateX(20px); }
+
+/* ── Layout ── */
+.container {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 2rem 1rem 4rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+@media (max-width: 640px) {
+  .container { grid-template-columns: 1fr; padding: 1.2rem 0.8rem 5rem; }
+}
+
+/* ── Panel ── */
+.panel {
+  background: var(--panel);
+  border: 1.5px solid var(--line);
+  border-radius: 4px;
+  box-shadow: 4px 4px 0 var(--shadow);
+  transition: background 0.3s, border-color 0.3s;
+}
+.panel-head {
+  padding: 1rem 1.2rem 0.8rem;
+  border-bottom: 1.5px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.panel-head .icon {
+  font-size: 1rem;
+  width: 28px; height: 28px;
+  background: var(--ink);
+  color: var(--gold);
+  border-radius: 50%;
+  display: grid; place-items: center;
+  flex-shrink: 0;
+  transition: background 0.3s;
+}
+.panel-head h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* ── Form ── */
+.form-body { padding: 1.2rem; display: flex; flex-direction: column; gap: 0.9rem; }
+
+label {
+  display: block;
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.3rem;
+}
+
+input[type="text"],
+input[type="number"],
+select {
+  width: 100%;
+  padding: 0.65rem 0.8rem;
+  border: 1.5px solid var(--line);
+  border-radius: 3px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.9rem;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: border-color 0.15s, background 0.3s, color 0.3s;
+}
+input:focus, select:focus { border-color: var(--accent); }
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a7d6b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.8rem center;
+  padding-right: 2rem;
+}
+
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+.row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.7rem; }
+
+/* Size pills */
+.size-pills {
+  display: flex; gap: 0.4rem; flex-wrap: wrap;
+}
+.size-pill {
+  padding: 0.4rem 0.7rem;
+  border: 1.5px solid var(--line);
+  border-radius: 3px;
+  background: var(--paper);
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: all 0.12s;
+  -webkit-tap-highlight-color: transparent;
+}
+.size-pill:hover { border-color: var(--gold); color: var(--ink); }
+.size-pill.active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--gold);
+}
+
+/* Custom category row */
+.custom-cat-row {
+  display: flex; gap: 0.5rem;
+}
+.custom-cat-row input { flex: 1; }
+.btn-add-cat {
+  padding: 0 0.8rem;
+  background: var(--cream);
+  border: 1.5px solid var(--line);
+  border-radius: 3px;
+  color: var(--ink);
+  font-family: 'DM Mono', monospace;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.12s;
+  white-space: nowrap;
+}
+.btn-add-cat:hover { background: var(--gold); }
+
+.btn-add {
+  width: 100%;
+  padding: 0.8rem;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.82rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s, box-shadow 0.1s;
+  box-shadow: 3px 3px 0 rgba(200,64,26,0.25);
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-add:hover { background: #a83314; }
+.btn-add:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 rgba(200,64,26,0.2); }
+
+/* ── Bill Panel ── */
+.bill-body { padding: 0; }
+
+.restaurant-strip {
+  padding: 0.8rem 1.2rem;
+  border-bottom: 1.5px dashed var(--line);
+  display: flex; align-items: center; gap: 0.6rem;
+}
+.restaurant-strip input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  font-style: italic;
+  color: var(--ink);
+  outline: none;
+  min-width: 0;
+}
+.restaurant-strip input::placeholder { color: var(--muted); }
+
+.summary-chips {
+  display: flex; flex-wrap: wrap; gap: 0.5rem;
+  padding: 0.7rem 1.2rem;
+  border-bottom: 1px dashed var(--line);
+}
+.chip {
+  background: var(--cream);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 0.28rem 0.55rem;
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  transition: background 0.3s;
+}
+.chip strong { color: var(--ink); }
+
+/* Order list */
+#order-list {
+  list-style: none;
+  max-height: 320px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+#order-list::-webkit-scrollbar { width: 4px; }
+#order-list::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 2px; }
+
+.order-item {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.4rem;
+  align-items: center;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px dashed var(--line);
+  animation: slideIn 0.22s ease;
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.order-item:hover { background: rgba(212,168,71,0.06); }
+
+.item-name {
+  font-size: 0.84rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.item-meta {
+  font-size: 0.61rem;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  margin-top: 2px;
+  display: flex; gap: 0.4rem; flex-wrap: wrap;
+}
+.meta-badge {
+  background: var(--cream);
+  border-radius: 2px;
+  padding: 1px 5px;
+  border: 1px solid var(--line);
+  transition: background 0.3s;
+}
+
+.item-qty {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 0.8rem; color: var(--muted);
+}
+.qty-btn {
+  width: 24px; height: 24px;
+  border: 1px solid var(--line);
+  background: var(--cream);
+  border-radius: 50%;
+  cursor: pointer;
+  display: grid; place-items: center;
+  font-size: 1rem; line-height: 1;
+  color: var(--ink);
+  transition: background 0.12s;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+}
+.qty-btn:hover, .qty-btn:active { background: var(--gold); }
+
+.item-price {
+  font-size: 0.86rem;
+  font-weight: 500;
+  text-align: right;
+  min-width: 64px;
+}
+.item-remove {
+  background: none; border: none;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 1rem;
+  padding: 0 0 0 0.3rem;
+  transition: color 0.12s;
+  -webkit-tap-highlight-color: transparent;
+}
+.item-remove:hover { color: var(--accent); }
+
+.empty-state {
+  padding: 2.5rem 1.2rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.76rem;
+  letter-spacing: 0.07em;
+  line-height: 1.8;
+}
+.empty-state .plate { font-size: 2.5rem; display: block; margin-bottom: 0.5rem; opacity: 0.35; }
+
+/* ── Totals ── */
+.totals {
+  border-top: 2px solid var(--ink);
+  padding: 1rem 1.2rem;
+  transition: border-color 0.3s;
+}
+.totals-inputs {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 0.6rem; margin-bottom: 0.8rem;
+}
+.totals-inputs label { font-size: 0.63rem; }
+.totals-inputs input { padding: 0.45rem 0.65rem; font-size: 0.8rem; }
+
+.totals-row {
+  display: flex; justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 0.3rem;
+}
+.totals-row.grand {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1.5px solid var(--line);
+}
+.totals-row.grand .amount { color: var(--accent); }
+
+/* ── Validate ── */
+.validate-section { padding: 0 1.2rem 1rem; }
+.validate-row { display: flex; gap: 0.6rem; align-items: flex-end; }
+.validate-row > div { flex: 1; min-width: 0; }
+.validate-row label { font-size: 0.63rem; }
+
+.btn-validate {
+  padding: 0.65rem 1rem;
+  background: var(--ink);
+  color: var(--gold);
+  border: none;
+  border-radius: 3px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.15s;
+  box-shadow: 3px 3px 0 var(--shadow);
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-validate:hover { background: #2e2010; }
+
+.verdict {
+  margin-top: 0.8rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 3px;
+  font-size: 0.8rem;
+  display: none;
+  animation: slideIn 0.2s ease;
+  line-height: 1.5;
+}
+.verdict.ok    { background: rgba(46,125,85,0.1); border: 1.5px solid var(--success); color: var(--success); }
+.verdict.over  { background: rgba(200,64,26,0.08); border: 1.5px solid var(--accent); color: var(--accent); }
+.verdict.under { background: rgba(212,168,71,0.1); border: 1.5px solid var(--gold); color: #8a6010; }
+[data-theme="dark"] .verdict.under { color: var(--gold); }
+.verdict .diff { font-weight: 700; }
+
+/* ── Actions ── */
+.actions { display: flex; gap: 0.6rem; padding: 0 1.2rem 1.2rem; }
+.btn-ghost {
+  flex: 1; padding: 0.6rem;
+  background: none;
+  border: 1.5px solid var(--line);
+  border-radius: 3px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: var(--muted);
+  transition: all 0.12s;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-ghost:hover { border-color: var(--ink); color: var(--ink); }
+
+/* scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<header>
+  <!-- Dark Mode Toggle -->
+  <div class="dark-toggle">
+    <label class="toggle-label" for="dm-toggle" style="color:var(--muted)">
+      <span id="dm-icon">☀️</span>
+    </label>
+    <label class="toggle-switch" title="Toggle dark mode">
+      <input type="checkbox" id="dm-toggle" onchange="toggleDark(this)">
+      <div class="toggle-track"></div>
+      <div class="toggle-thumb" id="dm-thumb">☀️</div>
+    </label>
+  </div>
+
+  <h1>Order<span>Check</span></h1>
+  <p>Restaurant Bill Tracker</p>
+  <div class="header-rule"></div>
+</header>
+
+<div class="container">
+
+  <!-- ── ADD ITEM PANEL ── -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="icon">＋</div>
+      <h2>Add Order Item</h2>
+    </div>
+    <div class="form-body">
+
+      <!-- Name -->
+      <div>
+        <label>Item Name</label>
+        <input type="text" id="item-name" placeholder="e.g. Butter Chicken" autocomplete="off" />
+      </div>
+
+      <!-- Category + custom -->
+      <div>
+        <label>Category</label>
+        <select id="item-cat"></select>
+      </div>
+      <div>
+        <label>Add Custom Category</label>
+        <div class="custom-cat-row">
+          <input type="text" id="custom-cat-input" placeholder="e.g. Combo Meal" autocomplete="off" />
+          <button class="btn-add-cat" onclick="addCustomCategory()" title="Add category">＋</button>
+        </div>
+      </div>
+
+      <!-- Size -->
+      <div>
+        <label>Size</label>
+        <div class="size-pills" id="size-pills">
+          <button class="size-pill active" data-size="" onclick="selectSize(this)">None</button>
+          <button class="size-pill" data-size="S"  onclick="selectSize(this)">S</button>
+          <button class="size-pill" data-size="M"  onclick="selectSize(this)">M</button>
+          <button class="size-pill" data-size="L"  onclick="selectSize(this)">L</button>
+          <button class="size-pill" data-size="XL" onclick="selectSize(this)">XL</button>
+        </div>
+      </div>
+
+      <!-- Price + Qty -->
+      <div class="row2">
+        <div>
+          <label>Price (₹)</label>
+          <input type="number" id="item-price" placeholder="0.00" min="0" step="0.01" inputmode="decimal" />
+        </div>
+        <div>
+          <label>Qty</label>
+          <input type="number" id="item-qty" placeholder="1" min="1" value="1" inputmode="numeric" />
+        </div>
+      </div>
+
+      <button class="btn-add" onclick="addItem()">＋ Add to Order</button>
+    </div>
+  </div>
+
+  <!-- ── BILL PANEL ── -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="icon">🧾</div>
+      <h2>Your Order Bill</h2>
+    </div>
+    <div class="bill-body">
+
+      <div class="restaurant-strip">
+        <span>🍽</span>
+        <input type="text" id="restaurant-name" placeholder="Restaurant name…" autocomplete="off" />
+      </div>
+
+      <div class="summary-chips">
+        <div class="chip">Items: <strong id="chip-items">0</strong></div>
+        <div class="chip">Qty: <strong id="chip-qty">0</strong></div>
+        <div class="chip">Subtotal: <strong id="chip-sub">₹0.00</strong></div>
+      </div>
+
+      <ul id="order-list">
+        <li class="empty-state">
+          <span class="plate">🍽️</span>
+          No items added yet.<br>Start adding your order above.
+        </li>
+      </ul>
+
+      <div class="totals">
+        <div class="totals-inputs">
+          <div>
+            <label>GST / Tax %</label>
+            <input type="number" id="tax-pct" value="5" min="0" max="100" step="0.5" inputmode="decimal" oninput="recalc()" />
+          </div>
+          <div>
+            <label>Tip %</label>
+            <input type="number" id="tip-pct" value="0" min="0" max="100" step="0.5" inputmode="decimal" oninput="recalc()" />
+          </div>
+        </div>
+        <div class="totals-row"><span>Subtotal</span><span id="t-sub">₹0.00</span></div>
+        <div class="totals-row"><span>Tax (<span id="t-tax-pct">5</span>%)</span><span id="t-tax">₹0.00</span></div>
+        <div class="totals-row"><span>Tip (<span id="t-tip-pct">0</span>%)</span><span id="t-tip">₹0.00</span></div>
+        <div class="totals-row grand">
+          <span>Total</span>
+          <span class="amount" id="t-grand">₹0.00</span>
+        </div>
+      </div>
+
+      <div class="validate-section">
+        <div class="validate-row">
+          <div>
+            <label>Restaurant Bill Amount (₹)</label>
+            <input type="number" id="bill-amount" placeholder="Enter final bill" min="0" step="0.01" inputmode="decimal" />
+          </div>
+          <button class="btn-validate" onclick="validateBill()">✓ Check</button>
+        </div>
+        <div class="verdict" id="verdict"></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn-ghost" onclick="clearAll()">🗑 Clear All</button>
+        <button class="btn-ghost" onclick="printBill()">🖨 Print</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ── State ── */
+let orders = [];
+let selectedSize = '';
+const DEFAULT_CATS = ['Main Course','Starter','Dessert','Beverage','Bread & Rice','Side Dish','Other'];
+let customCats = JSON.parse(localStorage.getItem('oc_cats') || '[]');
+
+/* ── Dark mode ── */
+function toggleDark(cb) {
+  const dark = cb.checked;
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  document.getElementById('dm-thumb').textContent = dark ? '🌙' : '☀️';
+  localStorage.setItem('oc_dark', dark ? '1' : '');
+}
+(function initDark() {
+  const saved = localStorage.getItem('oc_dark');
+  if (saved) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    document.getElementById('dm-toggle').checked = true;
+    document.getElementById('dm-thumb').textContent = '🌙';
+  }
+})();
+
+/* ── Category ── */
+function allCats() { return [...DEFAULT_CATS, ...customCats]; }
+
+function buildCatSelect() {
+  const sel = document.getElementById('item-cat');
+  const cur = sel.value;
+  sel.innerHTML = allCats().map(c =>
+    `<option value="${escHtml(c)}" ${c===cur?'selected':''}>${escHtml(c)}</option>`
+  ).join('');
+}
+
+function addCustomCategory() {
+  const inp = document.getElementById('custom-cat-input');
+  const val = inp.value.trim();
+  if (!val) { inp.focus(); return; }
+  if (allCats().map(c=>c.toLowerCase()).includes(val.toLowerCase())) {
+    inp.value=''; return;
+  }
+  customCats.push(val);
+  localStorage.setItem('oc_cats', JSON.stringify(customCats));
+  buildCatSelect();
+  document.getElementById('item-cat').value = val;
+  inp.value = '';
+}
+
+/* ── Size ── */
+function selectSize(btn) {
+  document.querySelectorAll('.size-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  selectedSize = btn.dataset.size;
+}
+
+/* ── Helpers ── */
+const fmt = n => '₹' + Number(n).toFixed(2);
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function flash(id) {
+  const el = document.getElementById(id);
+  el.style.borderColor = 'var(--accent)';
+  el.focus();
+  setTimeout(() => el.style.borderColor = '', 900);
+}
+
+/* ── Add Item ── */
+function addItem() {
+  const name  = document.getElementById('item-name').value.trim();
+  const cat   = document.getElementById('item-cat').value;
+  const price = parseFloat(document.getElementById('item-price').value);
+  const qty   = Math.max(1, parseInt(document.getElementById('item-qty').value) || 1);
+
+  if (!name)                    { flash('item-name');  return; }
+  if (isNaN(price) || price < 0){ flash('item-price'); return; }
+
+  orders.push({ id: Date.now(), name, cat, size: selectedSize, price, qty });
+  renderList();
+  recalc();
+
+  document.getElementById('item-name').value  = '';
+  document.getElementById('item-price').value = '';
+  document.getElementById('item-qty').value   = '1';
+  document.getElementById('item-name').focus();
+}
+
+/* ── Qty controls ── */
+function changeQty(id, delta) {
+  const o = orders.find(x => x.id === id);
+  if (!o) return;
+  o.qty = Math.max(1, o.qty + delta);
+  renderList(); recalc();
+}
+function removeItem(id) {
+  orders = orders.filter(x => x.id !== id);
+  renderList(); recalc();
+}
+
+/* ── Render list ── */
+function renderList() {
+  const ul = document.getElementById('order-list');
+  if (!orders.length) {
+    ul.innerHTML = `<li class="empty-state"><span class="plate">🍽️</span>No items yet.<br>Add your order above.</li>`;
+    return;
+  }
+  ul.innerHTML = orders.map(o => {
+    const sizeTag = o.size ? `<span class="meta-badge">${escHtml(o.size)}</span>` : '';
+    return `
+    <li class="order-item">
+      <div style="min-width:0">
+        <div class="item-name">${escHtml(o.name)}</div>
+        <div class="item-meta">
+          <span class="meta-badge">${escHtml(o.cat)}</span>
+          ${sizeTag}
+          <span>@ ${fmt(o.price)}</span>
+        </div>
+      </div>
+      <div class="item-qty">
+        <button class="qty-btn" onclick="changeQty(${o.id},-1)">−</button>
+        <span>${o.qty}</span>
+        <button class="qty-btn" onclick="changeQty(${o.id},+1)">+</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.2rem;flex-shrink:0">
+        <span class="item-price">${fmt(o.price * o.qty)}</span>
+        <button class="item-remove" onclick="removeItem(${o.id})" title="Remove">✕</button>
+      </div>
+    </li>`;
+  }).join('');
+}
+
+/* ── Recalc ── */
+function recalc() {
+  const sub    = orders.reduce((s,o) => s + o.price * o.qty, 0);
+  const taxPct = parseFloat(document.getElementById('tax-pct').value) || 0;
+  const tipPct = parseFloat(document.getElementById('tip-pct').value) || 0;
+  const tax    = sub * taxPct / 100;
+  const tip    = sub * tipPct / 100;
+  const grand  = sub + tax + tip;
+
+  document.getElementById('t-sub').textContent      = fmt(sub);
+  document.getElementById('t-tax').textContent      = fmt(tax);
+  document.getElementById('t-tip').textContent      = fmt(tip);
+  document.getElementById('t-grand').textContent    = fmt(grand);
+  document.getElementById('t-tax-pct').textContent  = taxPct;
+  document.getElementById('t-tip-pct').textContent  = tipPct;
+
+  const totalQty = orders.reduce((s,o) => s+o.qty, 0);
+  document.getElementById('chip-items').textContent = orders.length;
+  document.getElementById('chip-qty').textContent   = totalQty;
+  document.getElementById('chip-sub').textContent   = fmt(sub);
+
+  document.getElementById('verdict').style.display  = 'none';
+}
+
+/* ── Validate ── */
+function validateBill() {
+  const billStr = document.getElementById('bill-amount').value;
+  if (!billStr) return;
+  const bill  = parseFloat(billStr);
+  const grand = parseFloat(document.getElementById('t-grand').textContent.replace('₹','')) || 0;
+  const diff  = bill - grand;
+  const vd    = document.getElementById('verdict');
+  vd.style.display = 'block';
+
+  if (Math.abs(diff) < 0.5) {
+    vd.className = 'verdict ok';
+    vd.innerHTML = `✅ Bill matches your total (${fmt(grand)}). All good!`;
+  } else if (diff > 0) {
+    vd.className = 'verdict over';
+    vd.innerHTML = `⚠️ Overcharged by <span class="diff">${fmt(diff)}</span> vs your total of ${fmt(grand)}.`;
+  } else {
+    vd.className = 'verdict under';
+    vd.innerHTML = `ℹ️ Billed <span class="diff">${fmt(Math.abs(diff))}</span> less than your total (${fmt(grand)}). Check for missing items.`;
+  }
+}
+
+/* ── Clear ── */
+function clearAll() {
+  if (!orders.length) return;
+  if (!confirm('Clear all order items?')) return;
+  orders = [];
+  renderList(); recalc();
+  document.getElementById('bill-amount').value = '';
+  document.getElementById('verdict').style.display = 'none';
+}
+
+/* ── Print ── */
+function printBill() {
+  const rest  = document.getElementById('restaurant-name').value || 'Restaurant';
+  const rows  = orders.map(o => {
+    const sz = o.size ? ` [${o.size}]` : '';
+    return `  ${(o.name+sz).padEnd(26)} x${String(o.qty).padStart(2)}  ${fmt(o.price).padStart(9)}  = ${fmt(o.price*o.qty).padStart(10)}`;
+  }).join('\n');
+  const sub   = document.getElementById('t-sub').textContent;
+  const tax   = document.getElementById('t-tax').textContent;
+  const tip   = document.getElementById('t-tip').textContent;
+  const grand = document.getElementById('t-grand').textContent;
+  const w = window.open('','_blank','width=500,height=720');
+  if (!w) { alert('Allow pop-ups to print.'); return; }
+  w.document.write(`<pre style="font-family:monospace;padding:2rem;font-size:13px;line-height:1.7">
+==========================================
+  ${rest.toUpperCase()}
+  OrderCheck — Bill Tracker
+==========================================
+${rows || '  (no items)'}
+------------------------------------------
+  Subtotal                      ${sub}
+  Tax                           ${tax}
+  Tip                           ${tip}
+==========================================
+  GRAND TOTAL                   ${grand}
+==========================================
+  Printed: ${new Date().toLocaleString()}
+</pre>`);
+  w.print();
+}
+
+/* ── Keyboard shortcuts ── */
+['item-name','item-price','item-qty'].forEach(id => {
+  document.getElementById(id).addEventListener('keydown', e => {
+    if (e.key === 'Enter') addItem();
+  });
+});
+document.getElementById('bill-amount').addEventListener('keydown', e => {
+  if (e.key === 'Enter') validateBill();
+});
+document.getElementById('custom-cat-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addCustomCategory();
+});
+
+/* ── Init ── */
+buildCatSelect();
+</script>
+</body>
+</html>
