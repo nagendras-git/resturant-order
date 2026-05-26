@@ -313,8 +313,8 @@ select{
 }
 .rest-strip input{
   flex:1;border:none;background:transparent;
-  font-family:'Playfair Display',serif;
-  font-size:.95rem;font-style:italic;
+  font-family:'DM Mono',monospace;
+  font-size:1rem;font-style:normal;font-weight:500;
   color:var(--ink);outline:none;min-width:0;
 }
 .rest-strip input::placeholder{color:var(--muted);}
@@ -329,8 +329,8 @@ select{
 }
 .chip{
   background:var(--cream);border:1px solid var(--line);
-  border-radius:4px;padding:.22rem .5rem;
-  font-size:.62rem;letter-spacing:.06em;color:var(--muted);
+  border-radius:4px;padding:.3rem .65rem;
+  font-size:.75rem;letter-spacing:.04em;color:var(--muted);
   transition:background .3s;
 }
 .chip strong{color:var(--ink);}
@@ -348,10 +348,10 @@ select{
 }
 @keyframes slideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 .order-item:hover{background:rgba(212,168,71,.06);}
-.item-name{font-size:.83rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.item-name{font-size:.95rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .item-meta{
-  font-size:.6rem;color:var(--muted);letter-spacing:.05em;
-  margin-top:2px;display:flex;gap:.35rem;flex-wrap:wrap;align-items:center;
+  font-size:.72rem;color:var(--muted);letter-spacing:.03em;
+  margin-top:3px;display:flex;gap:.35rem;flex-wrap:wrap;align-items:center;
 }
 .meta-tag{
   background:var(--cream);border:1px solid var(--line);
@@ -360,23 +360,28 @@ select{
 }
 .qty-ctrl{display:flex;align-items:center;gap:5px;flex-shrink:0;}
 .qty-btn{
-  width:24px;height:24px;border:1px solid var(--line);
+  width:28px;height:28px;border:1px solid var(--line);
   background:var(--cream);border-radius:50%;cursor:pointer;
-  display:grid;place-items:center;font-size:.95rem;
+  display:grid;place-items:center;font-size:1.05rem;
   color:var(--ink);
   -webkit-tap-highlight-color:transparent;
   transition:background .12s;
 }
 .qty-btn:hover,.qty-btn:active{background:var(--gold);}
-.qty-val{font-size:.8rem;min-width:18px;text-align:center;}
-.item-price{font-size:.85rem;font-weight:500;text-align:right;min-width:60px;flex-shrink:0;}
+.qty-val{font-size:.9rem;min-width:22px;text-align:center;}
+.item-price{font-size:1rem;font-weight:600;text-align:right;min-width:68px;flex-shrink:0;}
 .item-del{
-  background:none;border:none;cursor:pointer;
-  color:var(--muted);font-size:.95rem;padding:0 0 0 .3rem;
+  background:rgba(200,64,26,0.1);
+  border:none;cursor:pointer;
+  color:#c8401a;
+  width:26px;height:26px;border-radius:50%;
+  display:grid;place-items:center;
+  font-size:.75rem;font-weight:700;
+  flex-shrink:0;margin-left:.3rem;
   -webkit-tap-highlight-color:transparent;
-  transition:color .12s;
+  transition:background .15s,transform .1s;
 }
-.item-del:hover{color:var(--accent);}
+.item-del:hover,.item-del:active{background:rgba(200,64,26,0.25);transform:scale(1.1);}
 .empty-state{
   padding:2.4rem 1.1rem;text-align:center;
   color:var(--muted);font-size:.74rem;letter-spacing:.07em;line-height:1.9;
@@ -388,11 +393,11 @@ select{
 ─────────────────────────────── */
 .totals{border-top:2px solid var(--ink);padding:1rem 1.1rem;transition:border-color .3s;}
 .totals-inputs{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.8rem;}
-.totals-inputs .field label{font-size:.6rem;}
-.totals-inputs input{padding:.42rem .65rem;font-size:.8rem;}
+.totals-inputs .field label{font-size:.68rem;}
+.totals-inputs input{padding:.5rem .7rem;font-size:.88rem;}
 .t-row{
   display:flex;justify-content:space-between;
-  font-size:.78rem;color:var(--muted);margin-bottom:.3rem;
+  font-size:.88rem;color:var(--muted);margin-bottom:.35rem;
 }
 .t-row.grand{
   font-family:'Playfair Display',serif;
@@ -409,8 +414,8 @@ select{
 .validate-row{display:flex;gap:.6rem;align-items:flex-end;}
 .validate-row>.field{flex:1;min-width:0;}
 .verdict{
-  margin-top:.75rem;padding:.65rem .85rem;
-  border-radius:6px;font-size:.78rem;line-height:1.55;
+  margin-top:.75rem;padding:.75rem .9rem;
+  border-radius:6px;font-size:.88rem;line-height:1.6;
   display:none;animation:slideIn .2s ease;
 }
 .verdict.ok   {background:rgba(46,125,85,.1); border:1.5px solid var(--success);color:var(--success);}
@@ -541,6 +546,40 @@ select{
 .default-tag{opacity:.55;cursor:default;}
 
 /* ───────────────────────────────
+   SETTINGS COLLAPSIBLE GROUPS
+─────────────────────────────── */
+.sc-group{
+  background:var(--panel);
+  border:1.5px solid var(--line);
+  border-radius:10px;
+  margin-bottom:.75rem;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+  transition:background .3s,border-color .3s;
+}
+.sc-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.9rem 1.1rem;
+  font-size:.88rem;font-weight:600;letter-spacing:.02em;
+  cursor:pointer;
+  user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  transition:background .15s;
+}
+.sc-head:active{background:var(--cream);}
+.sc-chevron{
+  font-size:.7rem;color:var(--muted);
+  transition:transform .25s;
+}
+.sc-group.collapsed .sc-chevron{transform:rotate(-90deg);}
+.sc-body{
+  border-top:1.5px solid var(--line);
+  padding:.5rem .6rem .6rem;
+  transition:background .3s;
+}
+.sc-group.collapsed .sc-body{display:none;}
+
+/* ───────────────────────────────
    SCROLLBAR
 ─────────────────────────────── */
 ::-webkit-scrollbar{width:4px;}
@@ -655,118 +694,133 @@ select{
 <div class="page" id="page-settings">
 
   <!-- Appearance -->
-  <div class="settings-section">
-    <span class="settings-label">🎨 Appearance</span>
-
-    <div class="s-row">
-      <div class="s-row-info">
-        <div class="s-row-title">Dark Mode</div>
-        <div class="s-row-sub">Switch to dark theme</div>
-      </div>
-      <label class="sw">
-        <input type="checkbox" id="dark-toggle" onchange="applyDark(this.checked)">
-        <div class="sw-track"></div>
-        <div class="sw-thumb" id="dark-thumb">☀️</div>
-      </label>
+  <div class="sc-group">
+    <div class="sc-head" onclick="toggleSC(this)">
+      <span>🎨 Appearance</span><span class="sc-chevron">▼</span>
     </div>
-
-    <div class="s-row" style="flex-direction:column;align-items:flex-start;gap:.65rem;">
-      <div>
-        <div class="s-row-title">Accent Colour</div>
-        <div class="s-row-sub">Highlight colour used throughout the app</div>
+    <div class="sc-body">
+      <div class="s-row">
+        <div class="s-row-info">
+          <div class="s-row-title">Dark Mode</div>
+          <div class="s-row-sub">Switch to dark theme</div>
+        </div>
+        <label class="sw">
+          <input type="checkbox" id="dark-toggle" onchange="applyDark(this.checked)">
+          <div class="sw-track"></div>
+          <div class="sw-thumb" id="dark-thumb">☀️</div>
+        </label>
       </div>
-      <div class="swatches">
-        <div class="swatch active" data-accent="red"    style="background:#c8401a" title="Red"    onclick="setAccent('red',this)"></div>
-        <div class="swatch"        data-accent="teal"   style="background:#0f766e" title="Teal"   onclick="setAccent('teal',this)"></div>
-        <div class="swatch"        data-accent="indigo" style="background:#4338ca" title="Indigo" onclick="setAccent('indigo',this)"></div>
-        <div class="swatch"        data-accent="rose"   style="background:#be185d" title="Rose"   onclick="setAccent('rose',this)"></div>
-        <div class="swatch"        data-accent="amber"  style="background:#b45309" title="Amber"  onclick="setAccent('amber',this)"></div>
+      <div class="s-row" style="flex-direction:column;align-items:flex-start;gap:.65rem;">
+        <div>
+          <div class="s-row-title">Accent Colour</div>
+          <div class="s-row-sub">Highlight colour used throughout the app</div>
+        </div>
+        <div class="swatches">
+          <div class="swatch active" data-accent="red"    style="background:#c8401a" title="Red"    onclick="setAccent('red',this)"></div>
+          <div class="swatch"        data-accent="teal"   style="background:#0f766e" title="Teal"   onclick="setAccent('teal',this)"></div>
+          <div class="swatch"        data-accent="indigo" style="background:#4338ca" title="Indigo" onclick="setAccent('indigo',this)"></div>
+          <div class="swatch"        data-accent="rose"   style="background:#be185d" title="Rose"   onclick="setAccent('rose',this)"></div>
+          <div class="swatch"        data-accent="amber"  style="background:#b45309" title="Amber"  onclick="setAccent('amber',this)"></div>
+        </div>
+      </div>
+      <div class="s-row" style="flex-direction:column;align-items:flex-start;gap:.65rem;">
+        <div>
+          <div class="s-row-title">Text Size</div>
+          <div class="s-row-sub">Adjust the app font size</div>
+        </div>
+        <div class="size-opts">
+          <button class="size-opt" data-fs="14px" onclick="setFontSize('14px',this)">A−</button>
+          <button class="size-opt active" data-fs="16px" onclick="setFontSize('16px',this)">A</button>
+          <button class="size-opt" data-fs="18px" onclick="setFontSize('18px',this)">A+</button>
+          <button class="size-opt" data-fs="20px" onclick="setFontSize('20px',this)">A++</button>
+        </div>
       </div>
     </div>
-
-    <div class="s-row" style="flex-direction:column;align-items:flex-start;gap:.65rem;">
-      <div>
-        <div class="s-row-title">Text Size</div>
-        <div class="s-row-sub">Adjust the app font size</div>
-      </div>
-      <div class="size-opts">
-        <button class="size-opt" data-fs="14px" onclick="setFontSize('14px',this)">A−</button>
-        <button class="size-opt active" data-fs="16px" onclick="setFontSize('16px',this)">A</button>
-        <button class="size-opt" data-fs="18px" onclick="setFontSize('18px',this)">A+</button>
-        <button class="size-opt" data-fs="20px" onclick="setFontSize('20px',this)">A++</button>
-      </div>
-    </div>
-
-
   </div>
 
   <!-- Categories -->
-  <div class="settings-section">
-    <span class="settings-label">🗂 Categories</span>
-    <div class="s-row" style="flex-direction:column;align-items:flex-start;gap:.7rem;">
-      <div>
-        <div class="s-row-title">Manage Categories</div>
-        <div class="s-row-sub">Add custom food categories for your orders</div>
+  <div class="sc-group">
+    <div class="sc-head" onclick="toggleSC(this)">
+      <span>🗂 Categories</span><span class="sc-chevron">▼</span>
+    </div>
+    <div class="sc-body">
+      <div class="s-row" style="flex-direction:column;align-items:flex-start;gap:.7rem;">
+        <div>
+          <div class="s-row-title">Manage Categories</div>
+          <div class="s-row-sub">Add custom food categories for your orders</div>
+        </div>
+        <div class="inline-row" style="width:100%">
+          <input type="text" id="settings-cat-input" placeholder="New category name…" autocomplete="off" />
+          <button class="btn btn-sm" onclick="addCustomCat()">Add</button>
+        </div>
+        <div class="cat-tags" id="cat-tags-list"></div>
       </div>
-      <div class="inline-row" style="width:100%">
-        <input type="text" id="settings-cat-input" placeholder="New category name…" autocomplete="off" />
-        <button class="btn btn-sm" onclick="addCustomCat()">Add</button>
-      </div>
-      <div class="cat-tags" id="cat-tags-list"></div>
     </div>
   </div>
 
   <!-- Order Sizes -->
-  <div class="settings-section">
-    <span class="settings-label">📐 Order Sizes</span>
-    <div class="s-row" style="flex-direction:column;align-items:flex-start;gap:.7rem;">
-      <div>
-        <div class="s-row-title">Custom Sizes</div>
-        <div class="s-row-sub">Add your own size options (S M L XL are built-in)</div>
+  <div class="sc-group">
+    <div class="sc-head" onclick="toggleSC(this)">
+      <span>📐 Order Sizes</span><span class="sc-chevron">▼</span>
+    </div>
+    <div class="sc-body">
+      <div class="s-row" style="flex-direction:column;align-items:flex-start;gap:.7rem;">
+        <div>
+          <div class="s-row-title">Custom Sizes</div>
+          <div class="s-row-sub">Add your own size options (S M L XL are built-in)</div>
+        </div>
+        <div class="inline-row" style="width:100%">
+          <input type="text" id="settings-size-input" placeholder="e.g. Regular, Jumbo…" maxlength="8" autocomplete="off" />
+          <button class="btn btn-sm" onclick="addCustomSize()">Add</button>
+        </div>
+        <div class="cat-tags" id="size-tags-list"></div>
       </div>
-      <div class="inline-row" style="width:100%">
-        <input type="text" id="settings-size-input" placeholder="e.g. Regular, Jumbo…" maxlength="8" autocomplete="off" />
-        <button class="btn btn-sm" onclick="addCustomSize()">Add</button>
-      </div>
-      <div class="cat-tags" id="size-tags-list"></div>
     </div>
   </div>
 
   <!-- Tax / Tip defaults -->
-  <div class="settings-section">
-    <span class="settings-label">💰 Tax & Tip Defaults</span>
-    <div class="s-row">
-      <div class="s-row-info">
-        <div class="s-row-title">Default GST %</div>
-      </div>
-      <input type="number" id="def-tax" value="5" min="0" max="100" step="0.5" inputmode="decimal"
-             style="width:70px;text-align:right;margin:0" onchange="saveDefaults()" />
+  <div class="sc-group">
+    <div class="sc-head" onclick="toggleSC(this)">
+      <span>💰 Tax &amp; Tip Defaults</span><span class="sc-chevron">▼</span>
     </div>
-    <div class="s-row">
-      <div class="s-row-info">
-        <div class="s-row-title">Default Tip %</div>
+    <div class="sc-body">
+      <div class="s-row">
+        <div class="s-row-info">
+          <div class="s-row-title">Default GST %</div>
+        </div>
+        <input type="number" id="def-tax" value="5" min="0" max="100" step="0.5" inputmode="decimal"
+               style="width:70px;text-align:right;margin:0" onchange="saveDefaults()" />
       </div>
-      <input type="number" id="def-tip" value="0" min="0" max="100" step="0.5" inputmode="decimal"
-             style="width:70px;text-align:right;margin:0" onchange="saveDefaults()" />
+      <div class="s-row">
+        <div class="s-row-info">
+          <div class="s-row-title">Default Tip %</div>
+        </div>
+        <input type="number" id="def-tip" value="0" min="0" max="100" step="0.5" inputmode="decimal"
+               style="width:70px;text-align:right;margin:0" onchange="saveDefaults()" />
+      </div>
     </div>
   </div>
 
   <!-- Data -->
-  <div class="settings-section">
-    <span class="settings-label">🗃 Data</span>
-    <div class="s-row">
-      <div class="s-row-info">
-        <div class="s-row-title">Clear History</div>
-        <div class="s-row-sub">Delete all saved order history</div>
-      </div>
-      <button class="btn-danger" onclick="clearHistory()">Clear</button>
+  <div class="sc-group">
+    <div class="sc-head" onclick="toggleSC(this)">
+      <span>🗃 Data</span><span class="sc-chevron">▼</span>
     </div>
-    <div class="s-row">
-      <div class="s-row-info">
-        <div class="s-row-title">Reset All Settings</div>
-        <div class="s-row-sub">Restore defaults (won't clear history)</div>
+    <div class="sc-body">
+      <div class="s-row">
+        <div class="s-row-info">
+          <div class="s-row-title">Clear History</div>
+          <div class="s-row-sub">Delete all saved order history</div>
+        </div>
+        <button class="btn-danger" onclick="clearHistory()">Clear</button>
       </div>
-      <button class="btn-danger" onclick="resetSettings()">Reset</button>
+      <div class="s-row">
+        <div class="s-row-info">
+          <div class="s-row-title">Reset All Settings</div>
+          <div class="s-row-sub">Restore defaults (won't clear history)</div>
+        </div>
+        <button class="btn-danger" onclick="resetSettings()">Reset</button>
+      </div>
     </div>
   </div>
 
@@ -821,6 +875,12 @@ function switchTab(tab){
     document.getElementById('tab-'+t).classList.toggle('active',t===tab);
   });
   if(tab==='history') renderHistory();
+}
+
+
+/* ─── Settings accordion ─── */
+function toggleSC(head){
+  head.parentElement.classList.toggle('collapsed');
 }
 
 /* ─── Dark mode ─── */
