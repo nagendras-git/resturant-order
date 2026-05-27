@@ -1,852 +1,524 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light" data-accent="red">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>OrderCheck</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;900&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#0d0d10">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-/* ───────────────────────────────
-   TOKENS – Light
-─────────────────────────────── */
-:root {
-  --ink:    #1a1209;
-  --paper:  #f2f2f2;
-  --cream:  #e8e8e8;
-  --panel:  #ffffff;
-  --accent: #c8401a;
-  --gold:   #d4a847;
-  --muted:  #8a8a8a;
-  --success:#2e7d55;
-  --warn:   #b45309;
-  --line:   rgba(0,0,0,0.07);
-  --shadow: 0 2px 12px rgba(0,0,0,0.08);
-  --nav-h:  60px;
-  --header-h: 60px;
-  --fs: 1rem;        /* base font scale, changed by settings */
+/* ── Design tokens ── */
+:root{
+  --bg:#0d0d10;--sf:#141417;--sf2:#1e1e25;--sf3:#26262f;
+  --bd:#4a4a60;--bd2:#383850;--scrim:rgba(0,0,0,.72);
+  --t1:#f4f4fa;--t2:#c8c8e0;--t3:#b0b0cc;
+  --green:#22c55e;--gbg:rgba(34,197,94,.1);
+  --red:#f87171;--rbg:rgba(248,113,113,.1);
+  --amber:#fbbf24;--abg:rgba(251,191,36,.1);
+  --blue:#3B82F6;--blue-bg:rgba(59,130,246,.1);--blue-bd:rgba(59,130,246,.22);
+  --purple:#8b5cf6;
+  --nav-h:60px;--sb:env(safe-area-inset-bottom,0px);
+  --sat:env(safe-area-inset-top,0px);
+  --hdr-h:calc(var(--sat) + 62px);
+  --r:12px;--rl:16px;--rx:20px;
+  --ease:cubic-bezier(.16,1,.3,1);--spring:cubic-bezier(.34,1.56,.64,1);
 }
-/* Accent colours */
-[data-accent="red"]    { --accent:#c8401a; }
-[data-accent="teal"]   { --accent:#0f766e; }
-[data-accent="indigo"] { --accent:#4338ca; }
-[data-accent="rose"]   { --accent:#be185d; }
-[data-accent="amber"]  { --accent:#b45309; }
+[data-theme="soft-dark"]{--bg:#1a1a1f;--sf:#222228;--sf2:#2a2a32;--sf3:#313139;--bd:#4c4c5c;--bd2:#3d3d4a;--t1:#ececf1;--t2:#b8b8c8;--t3:#888898;}
+[data-theme="soft-dark"] .hdr{background:rgba(26,26,31,.98)!important}
+[data-theme="soft-dark"] .tbar{background:rgba(26,26,31,.98)!important}
+[data-theme="light"]{--bg:#f2f2f7;--sf:#fff;--sf2:#fff;--sf3:#f0f0f5;--bd:#c8c8d8;--bd2:#d8d8e4;--t1:#1a1a25;--t2:#606078;--t3:#9898b0;--scrim:rgba(0,0,0,.45);--blue-bg:rgba(59,130,246,.08);--blue-bd:rgba(59,130,246,.2);}
+[data-theme="light"] .hdr{background:var(--bg)!important;border-bottom:1px solid var(--bd)!important}
+[data-theme="light"] .tbar{background:var(--bg)!important;border-top:1px solid var(--bd)!important}
 
-/* Dark mode */
-[data-theme="dark"] {
-  --ink:   #f0e8d8;
-  --paper: #181310;
-  --cream: #221c14;
-  --panel: #1e1810;
-  --gold:  #d4a847;
-  --muted: #9a8d7a;
-  --success:#3fa06a;
-  --warn:  #d97706;
-  --line:  rgba(240,232,216,0.09);
-  --shadow: 0 2px 16px rgba(0,0,0,0.35);
-}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{height:100%;font-size:16px;background:var(--bg)}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;padding-bottom:calc(var(--nav-h) + var(--sb) + 4px);-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+::-webkit-scrollbar{width:0;height:0}
 
-/* ───────────────────────────────
-   RESET / BASE
-─────────────────────────────── */
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{-webkit-text-size-adjust:100%;font-size:var(--fs)}
-body{
-  background:var(--paper);
-  color:var(--ink);
-  font-family:'DM Mono',monospace;
-  min-height:100dvh;
-  padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom));
-  transition:background .3s,color .3s;
-  overflow-x:hidden;
-}
-
-
-
-/* ───────────────────────────────
-   HEADER
-─────────────────────────────── */
-.app-header{
-  position:sticky;top:0;z-index:50;
-  background:var(--ink);
-  height:calc(var(--header-h) + env(safe-area-inset-top));
-  padding-top:env(safe-area-inset-top);
+/* ── Header ── */
+.hdr{
+  position:fixed;top:0;left:0;right:0;z-index:80;
+  background:rgba(13,13,16,.97);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--bd2);
+  padding-top:calc(var(--sat) + 14px);
+  padding-bottom:13px;padding-left:16px;padding-right:16px;
   display:flex;align-items:center;justify-content:center;
-  box-shadow:0 2px 12px rgba(0,0,0,.3);
-  transition:background .3s;
 }
-.app-header h1{
-  font-family:'Playfair Display',serif;
-  font-size:1.55rem;font-weight:900;
-  letter-spacing:-.02em;
-  color:var(--paper);
-  position:relative;
-}
-.app-header h1 span{color:var(--gold);}
-.header-badge{
-  position:absolute;top:50%;right:1rem;transform:translateY(-50%);
-  background:var(--accent);
-  color:#fff;
-  font-size:.62rem;letter-spacing:.08em;
-  padding:.25rem .5rem;border-radius:999px;
-  font-family:'DM Mono',monospace;
-  transition:background .3s;
-}
+.hdr-in{width:100%;max-width:480px;display:flex;align-items:center;justify-content:space-between;}
+.hdr-l{display:flex;align-items:center;gap:10px;}
+.hdr-gr{font-size:.72rem;color:var(--t3);font-weight:400;line-height:1;}
+.hdr-nm{font-size:1.18rem;font-weight:800;color:var(--t1);letter-spacing:-.4px;line-height:1.2;}
+.hdr-badge{font-size:.68rem;font-weight:700;color:var(--blue);background:var(--blue-bg);border:1px solid var(--blue-bd);padding:3px 10px;border-radius:99px;}
 
-/* ───────────────────────────────
-   BOTTOM NAV
-─────────────────────────────── */
-.bottom-nav{
-  position:fixed;
-  bottom:0;left:0;right:0;
-  height:calc(var(--nav-h) + env(safe-area-inset-bottom));
-  padding-bottom:env(safe-area-inset-bottom);
-  background:var(--panel);
-  border-top:1.5px solid var(--line);
-  display:flex;
-  z-index:100;
-  box-shadow:0 -4px 20px rgba(0,0,0,.1);
-  transition:background .3s,border-color .3s;
-}
-.nav-tab{
-  flex:1;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  gap:.18rem;cursor:pointer;
-  border:none;background:none;
-  color:var(--muted);
-  font-family:'DM Mono',monospace;
-  font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;
-  -webkit-tap-highlight-color:transparent;
-  transition:color .2s;
-  position:relative;
-}
-.nav-tab .nav-icon{font-size:1.3rem;line-height:1;}
-.nav-tab.active{color:var(--accent);}
-.nav-tab.active::before{
-  content:'';
-  position:absolute;top:0;left:20%;right:20%;
-  height:2.5px;border-radius:0 0 3px 3px;
-  background:var(--accent);
-  transition:background .3s;
-}
-.nav-badge{
-  position:absolute;top:8px;right:calc(50% - 14px);
-  background:var(--accent);color:#fff;
-  font-size:.55rem;min-width:16px;height:16px;
-  border-radius:999px;display:grid;place-items:center;
-  padding:0 3px;transition:background .3s;
-}
+/* ── Pages ── */
+.pg{display:none;}
+.pg.active{display:block;animation:pgIn .22s var(--ease) both;padding-top:var(--hdr-h);}
+@keyframes pgIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.wrap{width:100%;max-width:480px;margin:0 auto;padding:12px 14px 0;}
 
-/* ───────────────────────────────
-   PAGES
-─────────────────────────────── */
-.page{
-  display:none;
-  position:relative;z-index:1;
-  max-width:680px;margin:0 auto;
-  padding:1.4rem 1rem 2rem;
-  animation:fadeUp .22s ease;
-}
-.page.active{display:block;}
-@keyframes fadeUp{
-  from{opacity:0;transform:translateY(10px)}
-  to  {opacity:1;transform:translateY(0)}
-}
+/* ── Tab bar ── */
+.tbar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(13,13,16,.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--bd);height:calc(var(--nav-h) + var(--sb));padding-bottom:var(--sb);display:flex;align-items:flex-start;justify-content:center;padding-top:7px;}
+.tbar-in{width:100%;max-width:480px;display:flex;align-items:flex-start;justify-content:space-around;}
+.titem{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:0;background:none;border:none;color:var(--t3);transition:color 120ms;position:relative;}
+.titem.active{color:var(--blue);}
+.tico{height:26px;display:flex;align-items:center;justify-content:center;}
+.tico svg{width:1.35rem;height:1.35rem;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;opacity:.35;transition:opacity 200ms;}
+.titem.active .tico svg{opacity:1;stroke:var(--blue);}
+.tlabel{font-size:.68rem;font-weight:700;letter-spacing:.2px;}
+.tbadge{position:absolute;top:0;right:calc(50% - 20px);background:var(--blue);color:#fff;font-size:.5rem;font-weight:800;min-width:15px;height:15px;border-radius:99px;display:grid;place-items:center;padding:0 3px;}
 
-/* ───────────────────────────────
-   CARDS / PANELS
-─────────────────────────────── */
-.card{
-  background:var(--panel);
-  border:1.5px solid var(--line);
-  border-radius:8px;
-  box-shadow:var(--shadow);
-  margin-bottom:1.2rem;
-  overflow:hidden;
-  transition:background .3s,border-color .3s;
-}
-.card-head{
-  padding:.9rem 1.1rem;
-  border-bottom:1.5px solid var(--line);
-  display:flex;align-items:center;gap:.6rem;
-  cursor:default;
-  transition:border-color .3s;
-}
-.card-head.collapsible{cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;}
-.card-head.collapsible:active{background:var(--cream);}
-.head-icon{
-  width:28px;height:28px;border-radius:50%;
-  background:var(--ink);color:var(--gold);
-  display:grid;place-items:center;
-  font-size:.95rem;flex-shrink:0;
-  transition:background .3s;
-}
-.card-head h2{
-  font-family:'Playfair Display',serif;
-  font-size:.95rem;font-weight:600;flex:1;
-}
-.chevron{
-  font-size:.75rem;color:var(--muted);
-  transition:transform .25s;
-  flex-shrink:0;
-}
-.card.collapsed .chevron{transform:rotate(-90deg);}
-.card-body{transition:background .3s;}
+/* ── Cards ── */
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rx);overflow:hidden;margin-bottom:10px;}
+.card-hdr{padding:13px 16px;border-bottom:1px solid var(--bd2);display:flex;align-items:center;gap:10px;}
+.card-ico{width:30px;height:30px;border-radius:9px;background:var(--blue-bg);border:1px solid var(--blue-bd);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.card-ico svg{width:14px;height:14px;stroke:var(--blue);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.card-title{font-size:.9rem;font-weight:700;color:var(--t1);flex:1;}
+.card-hdr.collapsible{cursor:pointer;user-select:none;}
+.card-hdr.collapsible:active{background:var(--sf2);}
+.scaret{color:var(--t3);transition:transform .25s var(--ease);display:flex;align-items:center;}
+.scaret svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;}
+.card.collapsed .scaret{transform:rotate(-90deg);}
 .card.collapsed .card-body{display:none;}
 
-/* ───────────────────────────────
-   FORM ELEMENTS
-─────────────────────────────── */
-.form-body{padding:1.1rem;display:flex;flex-direction:column;gap:.9rem;}
-.field label{
-  display:block;
-  font-size:.62rem;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--muted);margin-bottom:.3rem;
-}
-input[type=text],input[type=number],select,textarea{
-  width:100%;
-  padding:.62rem .8rem;
-  border:1.5px solid var(--line);
-  border-radius:6px;
-  background:var(--cream);
-  color:var(--ink);
-  font-family:'DM Mono',monospace;
-  font-size:.88rem;
-  outline:none;
-  -webkit-appearance:none;
-  transition:border-color .15s,background .3s,color .3s;
-}
-input:focus,select:focus{border-color:var(--accent);}
-select{
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%238a7d6b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;
-  background-position:right .8rem center;
-  padding-right:2rem;
-}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;}
+/* ── Form elements ── */
+.fl{font-size:.68rem;font-weight:700;color:var(--t3);margin-bottom:5px;display:block;letter-spacing:.3px;}
+.fi{width:100%;font-size:1rem!important;padding:10px 12px;border:1px solid var(--bd);border-radius:var(--r);font-family:'Inter',sans-serif;font-weight:500;background:var(--sf2);color:var(--t1);outline:none;-webkit-appearance:none;transition:border-color 150ms,box-shadow 150ms;}
+.fi:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,130,246,.12);background:var(--sf);}
+.fi::placeholder{color:var(--t3);}
+select.fi{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%23b0b0cc' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .8rem center;padding-right:2rem;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.inline-row{display:flex;gap:8px;}
+.inline-row .fi{flex:1;}
+.fg{margin-bottom:12px;}
 
-/* Size pills */
-.pill-row{display:flex;gap:.4rem;flex-wrap:wrap;}
-.pill{
-  padding:.38rem .65rem;
-  border:1.5px solid var(--line);
-  border-radius:6px;
-  background:var(--cream);
-  color:var(--muted);
-  font-family:'DM Mono',monospace;
-  font-size:.72rem;letter-spacing:.06em;
-  cursor:pointer;
-  transition:all .12s;
-  -webkit-tap-highlight-color:transparent;
-}
-.pill:hover{border-color:var(--gold);color:var(--ink);}
-.pill.active{background:var(--ink);border-color:var(--ink);color:var(--gold);}
+/* ── Buttons ── */
+.btn-p{padding:11px 18px;border-radius:var(--r);font-family:'Inter',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;border:none;background:var(--blue);color:#fff;width:100%;transition:all 150ms var(--spring);}
+.btn-p:active{transform:scale(.97);opacity:.9;}
+.btn-g{padding:9px 14px;border-radius:var(--r);font-family:'Inter',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;background:var(--sf2);color:var(--t2);border:1px solid var(--bd);transition:all 120ms;}
+.btn-g:active{background:var(--sf3);}
+.btn-d{padding:9px 14px;border-radius:var(--r);font-family:'Inter',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;color:var(--red);background:var(--rbg);border:1px solid rgba(248,113,113,.3);transition:all 120ms;}
+.btn-d:active{opacity:.7;}
+.btn-validate{padding:10px 16px;border-radius:var(--r);font-family:'Inter',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;border:none;background:var(--blue);color:#fff;white-space:nowrap;flex-shrink:0;transition:all 150ms;}
+.btn-validate:active{transform:scale(.96);}
+.act-row{display:flex;gap:8px;}
+.act-row .btn-g{flex:1;}
 
-/* Inline-row (input + button) */
-.inline-row{display:flex;gap:.5rem;}
-.inline-row input{flex:1;}
+/* ── Size pills ── */
+.pill-row{display:flex;gap:6px;flex-wrap:wrap;}
+.pill{padding:6px 12px;border-radius:99px;background:var(--sf2);border:1px solid var(--bd);color:var(--t3);font-size:.78rem;font-weight:600;cursor:pointer;transition:all 120ms;font-family:'Inter',sans-serif;}
+.pill:active{transform:scale(.93);}
+.pill.active{background:var(--blue-bg);border-color:var(--blue-bd);color:var(--blue);}
 
-/* Buttons */
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:.4rem;
-  padding:.65rem 1rem;
-  border:none;border-radius:6px;
-  font-family:'DM Mono',monospace;font-size:.78rem;
-  letter-spacing:.1em;text-transform:uppercase;
-  cursor:pointer;
-  -webkit-tap-highlight-color:transparent;
-  transition:all .15s;
-}
-.btn-primary{
-  background:var(--accent);color:#fff;width:100%;
-  box-shadow:3px 3px 0 rgba(0,0,0,.15);
-}
-.btn-primary:hover{filter:brightness(1.1);}
-.btn-primary:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(0,0,0,.1);}
-.btn-sm{
-  padding:.38rem .7rem;font-size:.68rem;
-  background:var(--cream);border:1.5px solid var(--line);color:var(--ink);
-  border-radius:5px;
-}
-.btn-sm:hover{background:var(--gold);border-color:var(--gold);}
-.btn-ghost{
-  flex:1;padding:.58rem;
-  background:none;border:1.5px solid var(--line);
-  color:var(--muted);border-radius:6px;font-size:.68rem;
-  letter-spacing:.08em;text-transform:uppercase;
-  cursor:pointer;
-  -webkit-tap-highlight-color:transparent;
-  transition:all .12s;
-}
-.btn-ghost:hover{border-color:var(--ink);color:var(--ink);}
-.btn-validate{
-  padding:.65rem .9rem;
-  background:var(--ink);color:var(--gold);
-  border:none;border-radius:6px;
-  font-family:'DM Mono',monospace;font-size:.7rem;
-  letter-spacing:.1em;text-transform:uppercase;
-  cursor:pointer;white-space:nowrap;flex-shrink:0;
-  box-shadow:3px 3px 0 rgba(0,0,0,.2);
-  -webkit-tap-highlight-color:transparent;
-  transition:background .15s;
-}
-.btn-validate:hover{filter:brightness(1.2);}
-.btn-danger{
-  padding:.38rem .7rem;font-size:.68rem;
-  background:rgba(200,64,26,.08);border:1.5px solid rgba(200,64,26,.25);
-  color:var(--accent);border-radius:5px;cursor:pointer;
-  font-family:'DM Mono',monospace;letter-spacing:.06em;
-  -webkit-tap-highlight-color:transparent;
-  transition:all .12s;
-}
-.btn-danger:hover{background:rgba(200,64,26,.15);}
+/* ── Restaurant strip ── */
+.rest-strip{padding:12px 16px;border-bottom:1px solid var(--bd2);display:flex;align-items:center;gap:10px;}
+.rest-strip svg{width:16px;height:16px;stroke:var(--t3);fill:none;stroke-width:1.8;flex-shrink:0;}
+.rest-strip input{flex:1;border:none;background:transparent;font-family:'Inter',sans-serif;font-size:.95rem;font-weight:600;color:var(--t1);outline:none;min-width:0;}
+.rest-strip input::placeholder{color:var(--t3);}
 
-/* ───────────────────────────────
-   RESTAURANT STRIP
-─────────────────────────────── */
-.rest-strip{
-  padding:.75rem 1.1rem;
-  border-bottom:1.5px dashed var(--line);
-  display:flex;align-items:center;gap:.55rem;
-}
-.rest-strip input{
-  flex:1;border:none;background:transparent;
-  font-family:'DM Mono',monospace;
-  font-size:1rem;font-style:normal;font-weight:500;
-  color:var(--ink);outline:none;min-width:0;
-}
-.rest-strip input::placeholder{color:var(--muted);}
+/* ── Summary chips ── */
+.chips{display:flex;flex-wrap:wrap;gap:6px;padding:10px 16px;border-bottom:1px solid var(--bd2);}
+.chip{background:var(--sf2);border:1px solid var(--bd);border-radius:99px;padding:4px 10px;font-size:.72rem;font-weight:600;color:var(--t3);}
+.chip strong{color:var(--blue);}
 
-/* ───────────────────────────────
-   SUMMARY CHIPS
-─────────────────────────────── */
-.chips{
-  display:flex;flex-wrap:wrap;gap:.4rem;
-  padding:.65rem 1.1rem;
-  border-bottom:1px dashed var(--line);
-}
-.chip{
-  background:var(--cream);border:1px solid var(--line);
-  border-radius:4px;padding:.3rem .65rem;
-  font-size:.75rem;letter-spacing:.04em;color:var(--muted);
-  transition:background .3s;
-}
-.chip strong{color:var(--ink);}
-
-/* ───────────────────────────────
-   ORDER LIST
-─────────────────────────────── */
+/* ── Order list ── */
 #order-list{list-style:none;max-height:340px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
-.order-item{
-  display:grid;grid-template-columns:1fr auto auto;
-  gap:.4rem;align-items:center;
-  padding:.6rem 1.1rem;
-  border-bottom:1px dashed var(--line);
-  animation:slideIn .22s ease;
-}
-@keyframes slideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
-.order-item:hover{background:rgba(212,168,71,.06);}
-.item-name{font-size:.95rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.item-meta{
-  font-size:.72rem;color:var(--muted);letter-spacing:.03em;
-  margin-top:3px;display:flex;gap:.35rem;flex-wrap:wrap;align-items:center;
-}
-.meta-tag{
-  background:var(--cream);border:1px solid var(--line);
-  border-radius:3px;padding:1px 5px;
-  transition:background .3s;
-}
-.qty-ctrl{display:flex;align-items:center;gap:5px;flex-shrink:0;}
-.qty-btn{
-  width:28px;height:28px;border:1px solid var(--line);
-  background:var(--cream);border-radius:50%;cursor:pointer;
-  display:grid;place-items:center;font-size:1.05rem;
-  color:var(--ink);
-  -webkit-tap-highlight-color:transparent;
-  transition:background .12s;
-}
-.qty-btn:hover,.qty-btn:active{background:var(--gold);}
-.qty-val{font-size:.9rem;min-width:22px;text-align:center;}
-.item-price{font-size:1rem;font-weight:600;text-align:right;min-width:68px;flex-shrink:0;}
-.item-del{
-  background:rgba(200,64,26,0.1);
-  border:none;cursor:pointer;
-  color:#c8401a;
-  width:26px;height:26px;border-radius:50%;
-  display:grid;place-items:center;
-  font-size:.75rem;font-weight:700;
-  flex-shrink:0;margin-left:.3rem;
-  -webkit-tap-highlight-color:transparent;
-  transition:background .15s,transform .1s;
-}
-.item-del:hover,.item-del:active{background:rgba(200,64,26,0.25);transform:scale(1.1);}
-.empty-state{
-  padding:2.4rem 1.1rem;text-align:center;
-  color:var(--muted);font-size:.74rem;letter-spacing:.07em;line-height:1.9;
-}
-.empty-state .e-icon{font-size:2.2rem;display:block;margin-bottom:.5rem;opacity:.35;}
+.order-item{display:grid;grid-template-columns:1fr auto auto;gap:6px;align-items:center;padding:11px 16px;border-bottom:1px solid var(--bd2);animation:slideIn .2s var(--ease);}
+@keyframes slideIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+.order-item:active{background:var(--sf2);}
+.item-name{font-size:.9rem;font-weight:600;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.item-meta{font-size:.7rem;color:var(--t3);margin-top:3px;display:flex;gap:5px;flex-wrap:wrap;align-items:center;}
+.meta-tag{background:var(--sf2);border:1px solid var(--bd2);border-radius:5px;padding:1px 6px;}
+.qty-ctrl{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.qty-btn{width:26px;height:26px;border:1px solid var(--bd);background:var(--sf2);border-radius:8px;cursor:pointer;display:grid;place-items:center;font-size:.95rem;color:var(--t1);transition:all 120ms;font-family:'Inter',sans-serif;}
+.qty-btn:active{background:var(--blue-bg);border-color:var(--blue-bd);color:var(--blue);}
+.qty-val{font-size:.88rem;font-weight:700;min-width:20px;text-align:center;}
+.item-price{font-size:.92rem;font-weight:700;color:var(--t1);text-align:right;min-width:64px;flex-shrink:0;}
+.item-del{background:var(--rbg);border:1px solid rgba(248,113,113,.25);cursor:pointer;color:var(--red);width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:.72rem;flex-shrink:0;margin-left:4px;transition:all 120ms;}
+.item-del:active{background:rgba(248,113,113,.2);transform:scale(1.1);}
 
-/* ───────────────────────────────
-   TOTALS
-─────────────────────────────── */
-.totals{border-top:2px solid var(--ink);padding:1rem 1.1rem;transition:border-color .3s;}
-.totals-inputs{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.8rem;}
-.totals-inputs .field label{font-size:.68rem;}
-.totals-inputs input{padding:.5rem .7rem;font-size:.88rem;}
-.t-row{
-  display:flex;justify-content:space-between;
-  font-size:.88rem;color:var(--muted);margin-bottom:.35rem;
-}
-.t-row.grand{
-  font-family:'Playfair Display',serif;
-  font-size:1.1rem;font-weight:600;color:var(--ink);
-  margin-top:.5rem;padding-top:.5rem;
-  border-top:1.5px solid var(--line);
-}
-.t-row.grand .g-amt{color:var(--accent);}
+/* ── Empty state ── */
+.empty-state{padding:40px 16px;text-align:center;color:var(--t3);}
+.empty-state .e-icon{display:block;margin:0 auto 10px;opacity:.2;}
+.empty-state .e-icon svg{width:40px;height:40px;stroke:currentColor;fill:none;stroke-width:1.4;}
+.empty-state p{font-size:.82rem;font-weight:500;line-height:1.7;}
 
-/* ───────────────────────────────
-   VALIDATE
-─────────────────────────────── */
-.validate-wrap{padding:0 1.1rem 1rem;}
-.validate-row{display:flex;gap:.6rem;align-items:flex-end;}
-.validate-row>.field{flex:1;min-width:0;}
-.verdict{
-  margin-top:.75rem;padding:.75rem .9rem;
-  border-radius:6px;font-size:.88rem;line-height:1.6;
-  display:none;animation:slideIn .2s ease;
-}
-.verdict.ok   {background:rgba(46,125,85,.1); border:1.5px solid var(--success);color:var(--success);}
-.verdict.over {background:rgba(200,64,26,.08);border:1.5px solid var(--accent); color:var(--accent);}
-.verdict.under{background:rgba(212,168,71,.1);border:1.5px solid var(--gold);   color:var(--warn);}
-[data-theme=dark] .verdict.under{color:var(--gold);}
-.verdict .vdiff{font-weight:700;}
+/* ── Totals ── */
+.totals{padding:14px 16px;}
+.totals-inputs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.t-row{display:flex;justify-content:space-between;font-size:.84rem;color:var(--t3);margin-bottom:6px;font-weight:500;}
+.t-row.grand{font-size:1rem;font-weight:800;color:var(--t1);margin-top:8px;padding-top:10px;border-top:1px solid var(--bd2);}
+.t-row.grand .g-amt{color:var(--blue);}
 
-/* action row */
-.act-row{display:flex;gap:.6rem;padding:0 1.1rem 1.1rem;}
+/* ── Validate ── */
+.validate-wrap{padding:0 16px 14px;}
+.validate-row{display:flex;gap:8px;align-items:flex-end;}
+.validate-row>.fg{flex:1;min-width:0;margin-bottom:0;}
+.verdict{margin-top:10px;padding:10px 14px;border-radius:var(--r);font-size:.84rem;font-weight:500;line-height:1.6;display:none;animation:slideIn .2s ease;}
+.verdict.ok   {background:rgba(34,197,94,.08); border:1px solid rgba(34,197,94,.3);color:var(--green);}
+.verdict.over {background:var(--rbg);          border:1px solid rgba(248,113,113,.3);color:var(--red);}
+.verdict.under{background:var(--abg);          border:1px solid rgba(251,191,36,.3);color:var(--amber);}
+.verdict .vdiff{font-weight:800;}
 
-/* ───────────────────────────────
-   HISTORY TAB
-─────────────────────────────── */
-.hist-empty{
-  text-align:center;padding:3rem 1rem;
-  color:var(--muted);font-size:.76rem;letter-spacing:.08em;line-height:1.9;
-}
-.hist-empty .he-icon{font-size:2.5rem;display:block;margin-bottom:.6rem;opacity:.3;}
+/* ── History ── */
+.hist-empty{text-align:center;padding:48px 20px;color:var(--t3);}
+.hist-empty .he-icon{display:block;margin:0 auto 12px;opacity:.2;}
+.hist-empty .he-icon svg{width:44px;height:44px;stroke:currentColor;fill:none;stroke-width:1.3;}
+.hist-empty p{font-size:.82rem;font-weight:500;line-height:1.7;}
+.hist-item{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rl);margin-bottom:10px;overflow:hidden;}
+.hi-head{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.hi-rest{font-size:.92rem;font-weight:700;color:var(--t1);}
+.hi-meta{font-size:.68rem;color:var(--t3);margin-top:2px;}
+.hi-total{font-size:.96rem;font-weight:800;color:var(--blue);white-space:nowrap;}
+.hi-body{border-top:1px solid var(--bd2);padding:10px 14px;font-size:.74rem;color:var(--t3);}
+.hi-row{display:flex;justify-content:space-between;padding:2px 0;font-weight:500;}
+.hi-row span:last-child{color:var(--t1);}
+.hi-actions{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--bd2);}
+.hi-actions .btn-g,.hi-actions .btn-d{padding:7px 12px;font-size:.76rem;}
 
-.hist-item{
-  background:var(--panel);border:1.5px solid var(--line);
-  border-radius:8px;margin-bottom:.9rem;
-  overflow:hidden;box-shadow:var(--shadow);
-  transition:background .3s,border-color .3s;
-}
-.hi-head{
-  padding:.75rem 1rem;
-  display:flex;align-items:center;justify-content:space-between;gap:.6rem;
-}
-.hi-rest{font-family:'Playfair Display',serif;font-size:.95rem;font-style:italic;}
-.hi-meta{font-size:.62rem;color:var(--muted);margin-top:2px;}
-.hi-total{
-  font-family:'Playfair Display',serif;
-  font-size:1rem;font-weight:600;color:var(--accent);
-  white-space:nowrap;
-}
-.hi-body{
-  border-top:1px dashed var(--line);
-  padding:.6rem 1rem;font-size:.74rem;color:var(--muted);
-}
-.hi-row{display:flex;justify-content:space-between;padding:.2rem 0;}
-.hi-row span:last-child{color:var(--ink);font-weight:500;}
-.hi-actions{
-  display:flex;gap:.5rem;padding:.6rem 1rem;
-  border-top:1px dashed var(--line);
-}
+/* ── Settings (profile-style) ── */
+.pcard{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rl);overflow:hidden;margin-bottom:8px;}
+.prow{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid var(--bd2);}
+.prow:last-child{border-bottom:none;}
+.pico{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.pico svg{width:15px;height:15px;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.pinfo{flex:1;min-width:0;}
+.ptitle{font-size:.88rem;font-weight:600;color:var(--t1);}
+.psub{font-size:.72rem;color:var(--t3);margin-top:2px;}
+.ptap{cursor:pointer;transition:background 120ms;}
+.ptap:active{background:var(--sf2);}
+.pshdr{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;cursor:pointer;user-select:none;background:var(--sf2);border:1px solid var(--bd);border-radius:var(--rl);margin-bottom:6px;transition:background 120ms;}
+.pshdr:active{background:var(--sf3);}
+.pshdr-l{display:flex;align-items:center;gap:8px;}
+.pshdr-title{font-size:.86rem;font-weight:600;color:var(--t1);}
+.sbody{overflow:hidden;max-height:0;opacity:0;pointer-events:none;transition:max-height .38s var(--ease),opacity .22s ease;}
+.sbody.open{max-height:2000px;opacity:1;pointer-events:auto;}
+.plbl{font-size:.62rem;font-weight:700;color:var(--t3);letter-spacing:.5px;text-transform:uppercase;padding:0 2px;margin-bottom:6px;}
 
-/* ───────────────────────────────
-   SETTINGS TAB
-─────────────────────────────── */
-.settings-section{margin-bottom:1.4rem;}
-.settings-label{
-  font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;
-  color:var(--muted);padding:.5rem 0 .5rem;
-  display:block;border-bottom:1px solid var(--line);margin-bottom:.75rem;
-}
+/* ── Theme picker ── */
+.tpick{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;width:100%;}
+.topt{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 8px 10px;border-radius:var(--rl);border:2px solid var(--bd);background:var(--sf2);cursor:pointer;transition:all 150ms var(--spring);user-select:none;}
+.topt:active{transform:scale(.94);}
+.topt.on{border-color:var(--blue);background:var(--blue-bg);}
+.tprev{width:40px;height:28px;border-radius:8px;border:1px solid var(--bd);}
+.tlbs{font-size:.72rem;font-weight:700;color:var(--t2);}
+.topt.on .tlbs{color:var(--blue);}
 
-/* Setting row */
-.s-row{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:.65rem .9rem;
-  background:var(--panel);border:1.5px solid var(--line);
-  border-radius:6px;margin-bottom:.5rem;
-  transition:background .3s;
-}
-.s-row-info{flex:1;min-width:0;}
-.s-row-title{font-size:.82rem;font-weight:500;}
-.s-row-sub{font-size:.62rem;color:var(--muted);margin-top:2px;}
+/* ── Font size ── */
+.fsrow{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
+.fsbtn{padding:8px 4px;border-radius:var(--r);border:1px solid var(--bd);background:var(--sf2);color:var(--t2);font-family:'Inter',sans-serif;font-size:.78rem;font-weight:700;cursor:pointer;}
+.fsbtn.on{background:var(--blue);color:#fff;border-color:var(--blue);}
 
-/* Toggle switch (settings) */
-.sw{position:relative;width:44px;height:24px;flex-shrink:0;}
-.sw input{opacity:0;width:0;height:0;}
-.sw-track{
-  position:absolute;inset:0;
-  background:var(--cream);border:1.5px solid var(--line);
-  border-radius:999px;transition:background .25s;cursor:pointer;
-}
-.sw input:checked~.sw-track{background:var(--accent);}
-.sw-thumb{
-  position:absolute;top:3px;left:3px;
-  width:16px;height:16px;
-  background:#fff;border-radius:50%;
-  transition:transform .22s;pointer-events:none;
-  display:grid;place-items:center;font-size:9px;
-}
-.sw input:checked~.sw-thumb{transform:translateX(20px);}
+/* ── Cat tags ── */
+.cat-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.cat-tag{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:var(--sf2);border:1px solid var(--bd);border-radius:99px;font-size:.74rem;font-weight:600;color:var(--t1);}
+.cat-tag button{background:none;border:none;cursor:pointer;color:var(--t3);font-size:.8rem;line-height:1;padding:0;transition:color 100ms;}
+.cat-tag button:hover{color:var(--red);}
+.default-tag{opacity:.5;cursor:default;}
 
-/* Accent swatches */
-.swatches{display:flex;gap:.5rem;flex-wrap:wrap;}
-.swatch{
-  width:32px;height:32px;border-radius:50%;
-  border:2px solid transparent;
-  cursor:pointer;
-  -webkit-tap-highlight-color:transparent;
-  transition:transform .15s,border-color .15s;
-}
-.swatch:hover{transform:scale(1.12);}
-.swatch.active{border-color:var(--ink);transform:scale(1.12);}
+/* ── Toast ── */
+.toast{position:fixed;bottom:calc(var(--nav-h) + 14px + var(--sb));left:50%;transform:translateX(-50%) translateY(6px);background:var(--sf);border:1px solid var(--bd);color:var(--t1);padding:10px 22px;border-radius:99px;font-size:.88rem;font-weight:600;opacity:0;pointer-events:none;transition:opacity .18s,transform .22s var(--spring);white-space:nowrap;z-index:9999;box-shadow:0 4px 24px rgba(0,0,0,.5);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-/* Font size options */
-.size-opts{display:flex;gap:.4rem;}
-.size-opt{
-  padding:.35rem .7rem;
-  border:1.5px solid var(--line);border-radius:5px;
-  background:var(--cream);color:var(--muted);
-  font-family:'DM Mono',monospace;font-size:.72rem;
-  cursor:pointer;-webkit-tap-highlight-color:transparent;
-  transition:all .12s;
-}
-.size-opt.active{background:var(--ink);border-color:var(--ink);color:var(--gold);}
-
-/* Category tags */
-.cat-tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem;}
-.cat-tag{
-  display:inline-flex;align-items:center;gap:.3rem;
-  padding:.28rem .55rem;
-  background:var(--cream);border:1px solid var(--line);
-  border-radius:4px;font-size:.68rem;color:var(--ink);
-  transition:background .3s;
-}
-.cat-tag button{
-  background:none;border:none;cursor:pointer;
-  color:var(--muted);font-size:.8rem;line-height:1;
-  -webkit-tap-highlight-color:transparent;padding:0;
-}
-.cat-tag button:hover{color:var(--accent);}
-.default-tag{opacity:.55;cursor:default;}
-
-/* ───────────────────────────────
-   SETTINGS COLLAPSIBLE GROUPS
-─────────────────────────────── */
-.sc-group{
-  background:var(--panel);
-  border:1.5px solid var(--line);
-  border-radius:10px;
-  margin-bottom:.75rem;
-  overflow:hidden;
-  box-shadow:var(--shadow);
-  transition:background .3s,border-color .3s;
-}
-.sc-head{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:.9rem 1.1rem;
-  font-size:.88rem;font-weight:600;letter-spacing:.02em;
-  cursor:pointer;
-  user-select:none;
-  -webkit-tap-highlight-color:transparent;
-  transition:background .15s;
-}
-.sc-head:active{background:var(--cream);}
-.sc-chevron{
-  font-size:.7rem;color:var(--muted);
-  transition:transform .25s;
-}
-.sc-group.collapsed .sc-chevron{transform:rotate(-90deg);}
-.sc-body{
-  border-top:1.5px solid var(--line);
-  padding:.5rem .6rem .6rem;
-  transition:background .3s;
-}
-.sc-group.collapsed .sc-body{display:none;}
-
-/* ───────────────────────────────
-   SCROLLBAR
-─────────────────────────────── */
-::-webkit-scrollbar{width:4px;}
-::-webkit-scrollbar-thumb{background:var(--muted);border-radius:3px;}
+/* ── Confirm overlay ── */
+.cov{position:fixed;inset:0;z-index:900;background:var(--scrim);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .2s;}
+.cov.open{opacity:1;pointer-events:all;}
+.cbox{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rx);width:100%;max-width:300px;overflow:hidden;transform:scale(.92) translateY(8px);transition:transform .28s var(--spring);}
+.cov.open .cbox{transform:scale(1) translateY(0);}
+.ctitle{font-size:.9rem;font-weight:700;text-align:center;padding:22px 20px 4px;color:var(--t1);}
+.csub{font-size:.82rem;color:var(--t2);text-align:center;padding:0 20px 20px;line-height:1.5;}
+.cacts{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--bd2);}
+.ccancel,.cok{padding:15px;text-align:center;font-size:.9rem;cursor:pointer;background:none;border:none;font-family:'Inter',sans-serif;font-weight:600;}
+.ccancel{color:var(--t2);border-right:1px solid var(--bd2);}
+.cok{font-weight:700;}
 </style>
 </head>
 <body>
 
-<!-- ══ APP HEADER ══ -->
-<header class="app-header">
-  <h1>Order<span>Check</span></h1>
-  <span class="header-badge" id="order-count-badge" style="display:none">0 items</span>
-</header>
-
-<!-- ══ PAGES ══ -->
-
-<!-- ── ORDER PAGE ── -->
-<div class="page active" id="page-order">
-
-  <!-- Add Item Card -->
-  <div class="card">
-    <div class="card-head">
-      <div class="head-icon">＋</div>
-      <h2>Add Item</h2>
-    </div>
-    <div class="card-body">
-      <div class="form-body">
-        <div class="field">
-          <label>Item Name</label>
-          <input type="text" id="item-name" placeholder="e.g. Butter Chicken" autocomplete="off" />
-        </div>
-        <div class="field">
-          <label>Category</label>
-          <select id="item-cat"></select>
-        </div>
-        <div class="row2">
-          <div class="field">
-            <label>Price (₹)</label>
-            <input type="number" id="item-price" placeholder="0.00" min="0" step="0.01" inputmode="decimal" />
-          </div>
-          <div class="field">
-            <label>Qty</label>
-            <input type="number" id="item-qty" value="1" min="1" inputmode="numeric" />
-          </div>
-        </div>
-        <button class="btn btn-primary" onclick="addItem()">＋ Add to Order</button>
+<!-- ══ ORDER PAGE ══ -->
+<div class="pg active" id="page-order">
+  <div class="hdr"><div class="hdr-in">
+    <div class="hdr-l">
+      <div>
+        <div class="hdr-gr">Bill Tracker</div>
+        <div class="hdr-nm">OrderCheck</div>
       </div>
     </div>
+    <div id="order-count-badge" class="hdr-badge" style="display:none">0 items</div>
+  </div></div>
+
+  <div class="wrap" style="padding-bottom:20px;">
+
+    <!-- Add Item Card -->
+    <div class="card">
+      <div class="card-hdr">
+        <div class="card-ico">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <span class="card-title">Add Item</span>
+      </div>
+      <div class="card-body" style="padding:14px 16px;">
+        <div class="fg">
+          <label class="fl">Item Name</label>
+          <input class="fi" type="text" id="item-name" placeholder="e.g. Butter Chicken" autocomplete="off">
+        </div>
+        <div class="fg">
+          <label class="fl">Category</label>
+          <select class="fi" id="item-cat"></select>
+        </div>
+        <div class="row2 fg">
+          <div>
+            <label class="fl">Price (₹)</label>
+            <input class="fi" type="number" id="item-price" placeholder="0.00" min="0" step="0.01" inputmode="decimal">
+          </div>
+          <div>
+            <label class="fl">Qty</label>
+            <input class="fi" type="number" id="item-qty" value="1" min="1" inputmode="numeric">
+          </div>
+        </div>
+        <button class="btn-p" onclick="addItem()">Add to Order</button>
+      </div>
+    </div>
+
+    <!-- Bill Card -->
+    <div class="card" id="bill-card" style="display:none">
+      <div class="card-hdr collapsible" onclick="toggleBill()" id="bill-head">
+        <div class="card-ico">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <span class="card-title">Your Bill <span id="bill-head-total" style="color:var(--blue);font-size:.82rem;font-weight:700"></span></span>
+        <span class="scaret"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+      </div>
+      <div class="card-body">
+        <div class="rest-strip">
+          <svg viewBox="0 0 24 24"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>
+          <input type="text" id="restaurant-name" placeholder="Restaurant name…" autocomplete="off">
+        </div>
+        <div class="chips">
+          <div class="chip">Items: <strong id="chip-items">0</strong></div>
+          <div class="chip">Qty: <strong id="chip-qty">0</strong></div>
+          <div class="chip">Subtotal: <strong id="chip-sub">₹0.00</strong></div>
+        </div>
+        <ul id="order-list"></ul>
+        <div class="totals">
+          <div class="totals-inputs">
+            <div>
+              <label class="fl">GST / Tax %</label>
+              <input class="fi" type="number" id="tax-pct" value="5" min="0" max="100" step="0.5" inputmode="decimal" oninput="recalc()">
+            </div>
+            <div>
+              <label class="fl">Tip %</label>
+              <input class="fi" type="number" id="tip-pct" value="0" min="0" max="100" step="0.5" inputmode="decimal" oninput="recalc()">
+            </div>
+          </div>
+          <div class="t-row"><span>Subtotal</span><span id="t-sub">₹0.00</span></div>
+          <div class="t-row"><span>Tax (<span id="t-tax-pct">5</span>%)</span><span id="t-tax">₹0.00</span></div>
+          <div class="t-row"><span>Tip (<span id="t-tip-pct">0</span>%)</span><span id="t-tip">₹0.00</span></div>
+          <div class="t-row grand"><span>Total</span><span class="g-amt" id="t-grand">₹0.00</span></div>
+        </div>
+        <div class="validate-wrap">
+          <div class="validate-row">
+            <div class="fg" style="flex:1;margin-bottom:0">
+              <label class="fl">Restaurant Bill Amount (₹)</label>
+              <input class="fi" type="number" id="bill-amount" placeholder="Enter final bill" min="0" step="0.01" inputmode="decimal">
+            </div>
+            <button class="btn-validate" onclick="validateBill()">✓ Check</button>
+          </div>
+          <div class="verdict" id="verdict"></div>
+        </div>
+        <div class="act-row" style="padding:0 16px 14px;">
+          <button class="btn-g" onclick="saveToHistory()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Save
+          </button>
+          <button class="btn-g" onclick="clearAll()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>Clear
+          </button>
+          <button class="btn-g" onclick="printBill()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Print
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
-
-  <!-- Bill Card (collapsible, hidden until items exist) -->
-  <div class="card" id="bill-card" style="display:none">
-    <div class="card-head collapsible" onclick="toggleBill()" id="bill-head">
-      <div class="head-icon">🧾</div>
-      <h2>Your Bill</h2>
-      <span style="font-size:.75rem;color:var(--muted);margin-right:.3rem;" id="bill-head-total"></span>
-      <span class="chevron">▼</span>
-    </div>
-    <div class="card-body" id="bill-body">
-      <div class="rest-strip">
-        <span>🍽</span>
-        <input type="text" id="restaurant-name" placeholder="Restaurant name…" autocomplete="off" />
-      </div>
-      <div class="chips">
-        <div class="chip">Items: <strong id="chip-items">0</strong></div>
-        <div class="chip">Qty: <strong id="chip-qty">0</strong></div>
-        <div class="chip">Subtotal: <strong id="chip-sub">₹0.00</strong></div>
-      </div>
-      <ul id="order-list"></ul>
-      <div class="totals">
-        <div class="totals-inputs">
-          <div class="field">
-            <label>GST / Tax %</label>
-            <input type="number" id="tax-pct" value="5" min="0" max="100" step="0.5" inputmode="decimal" oninput="recalc()" />
-          </div>
-          <div class="field">
-            <label>Tip %</label>
-            <input type="number" id="tip-pct" value="0" min="0" max="100" step="0.5" inputmode="decimal" oninput="recalc()" />
-          </div>
-        </div>
-        <div class="t-row"><span>Subtotal</span><span id="t-sub">₹0.00</span></div>
-        <div class="t-row"><span>Tax (<span id="t-tax-pct">5</span>%)</span><span id="t-tax">₹0.00</span></div>
-        <div class="t-row"><span>Tip (<span id="t-tip-pct">0</span>%)</span><span id="t-tip">₹0.00</span></div>
-        <div class="t-row grand"><span>Total</span><span class="g-amt" id="t-grand">₹0.00</span></div>
-      </div>
-      <div class="validate-wrap">
-        <div class="validate-row">
-          <div class="field">
-            <label>Restaurant Bill Amount (₹)</label>
-            <input type="number" id="bill-amount" placeholder="Enter final bill" min="0" step="0.01" inputmode="decimal" />
-          </div>
-          <button class="btn-validate" onclick="validateBill()">✓ Check</button>
-        </div>
-        <div class="verdict" id="verdict"></div>
-      </div>
-      <div class="act-row">
-        <button class="btn-ghost" onclick="saveToHistory()">💾 Save</button>
-        <button class="btn-ghost" onclick="clearAll()">🗑 Clear</button>
-        <button class="btn-ghost" onclick="printBill()">🖨 Print</button>
-      </div>
-    </div>
-  </div>
-
-</div><!-- /page-order -->
-
-<!-- ── HISTORY PAGE ── -->
-<div class="page" id="page-history">
-  <div id="hist-list"></div>
 </div>
 
-<!-- ── SETTINGS PAGE ── -->
-<div class="page" id="page-settings">
-
-  <!-- Appearance -->
-  <div class="sc-group">
-    <div class="sc-head" onclick="toggleSC(this)">
-      <span>🎨 Appearance</span><span class="sc-chevron">▼</span>
-    </div>
-    <div class="sc-body">
-      <div class="s-row">
-        <div class="s-row-info">
-          <div class="s-row-title">Dark Mode</div>
-          <div class="s-row-sub">Switch to dark theme</div>
-        </div>
-        <label class="sw">
-          <input type="checkbox" id="dark-toggle" onchange="applyDark(this.checked)">
-          <div class="sw-track"></div>
-          <div class="sw-thumb" id="dark-thumb">☀️</div>
-        </label>
-      </div>
-      <div class="s-row" style="flex-direction:column;align-items:flex-start;gap:.65rem;">
-        <div>
-          <div class="s-row-title">Accent Colour</div>
-          <div class="s-row-sub">Highlight colour used throughout the app</div>
-        </div>
-        <div class="swatches">
-          <div class="swatch active" data-accent="red"    style="background:#c8401a" title="Red"    onclick="setAccent('red',this)"></div>
-          <div class="swatch"        data-accent="teal"   style="background:#0f766e" title="Teal"   onclick="setAccent('teal',this)"></div>
-          <div class="swatch"        data-accent="indigo" style="background:#4338ca" title="Indigo" onclick="setAccent('indigo',this)"></div>
-          <div class="swatch"        data-accent="rose"   style="background:#be185d" title="Rose"   onclick="setAccent('rose',this)"></div>
-          <div class="swatch"        data-accent="amber"  style="background:#b45309" title="Amber"  onclick="setAccent('amber',this)"></div>
-        </div>
-      </div>
-      <div class="s-row" style="flex-direction:column;align-items:flex-start;gap:.65rem;">
-        <div>
-          <div class="s-row-title">Text Size</div>
-          <div class="s-row-sub">Adjust the app font size</div>
-        </div>
-        <div class="size-opts">
-          <button class="size-opt" data-fs="14px" onclick="setFontSize('14px',this)">A−</button>
-          <button class="size-opt active" data-fs="16px" onclick="setFontSize('16px',this)">A</button>
-          <button class="size-opt" data-fs="18px" onclick="setFontSize('18px',this)">A+</button>
-          <button class="size-opt" data-fs="20px" onclick="setFontSize('20px',this)">A++</button>
-        </div>
-      </div>
-    </div>
+<!-- ══ HISTORY PAGE ══ -->
+<div class="pg" id="page-history">
+  <div class="hdr"><div class="hdr-in">
+    <div class="hdr-l"><div>
+      <div class="hdr-gr">Saved Orders</div>
+      <div class="hdr-nm">History</div>
+    </div></div>
+  </div></div>
+  <div class="wrap" style="padding-bottom:20px;padding-top:16px;">
+    <div id="hist-list"></div>
   </div>
+</div>
 
-  <!-- Categories -->
-  <div class="sc-group">
-    <div class="sc-head" onclick="toggleSC(this)">
-      <span>🗂 Categories</span><span class="sc-chevron">▼</span>
+<!-- ══ SETTINGS PAGE ══ -->
+<div class="pg" id="page-settings">
+  <div class="hdr"><div class="hdr-in">
+    <div class="hdr-l"><div>
+      <div class="hdr-gr">Preferences</div>
+      <div class="hdr-nm">Settings</div>
+    </div></div>
+  </div></div>
+  <div class="wrap" style="padding-top:20px;padding-bottom:24px;display:flex;flex-direction:column;gap:0;">
+
+    <!-- Appearance -->
+    <div class="plbl" style="margin-bottom:8px">Appearance</div>
+    <div class="pshdr" onclick="toggleSC('sc-appear')">
+      <div class="pshdr-l">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+        <span class="pshdr-title">Theme &amp; Font Size</span>
+      </div>
+      <span class="scaret" id="caret-sc-appear"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
     </div>
-    <div class="sc-body">
-      <div class="s-row" style="flex-direction:column;align-items:flex-start;gap:.7rem;">
-        <div>
-          <div class="s-row-title">Manage Categories</div>
-          <div class="s-row-sub">Add custom food categories for your orders</div>
+    <div class="sbody" id="sc-appear" style="margin-bottom:14px">
+      <div class="pcard">
+        <div class="prow" style="flex-direction:column;align-items:flex-start;gap:10px">
+          <div style="font-size:.82rem;font-weight:600;color:var(--t1)">Theme</div>
+          <div class="tpick">
+            <div class="topt on" id="th-dark" onclick="setTheme('dark')"><div class="tprev" style="background:#0d0d10;border-color:#3a3a50"></div><div class="tlbs">Dark</div></div>
+            <div class="topt" id="th-soft-dark" onclick="setTheme('soft-dark')"><div class="tprev" style="background:#1a1a1f;border-color:#4c4c5c"></div><div class="tlbs">Soft</div></div>
+            <div class="topt" id="th-light" onclick="setTheme('light')"><div class="tprev" style="background:#f2f2f7;border-color:#c8c8d8"></div><div class="tlbs">Light</div></div>
+          </div>
         </div>
-        <div class="inline-row" style="width:100%">
-          <input type="text" id="settings-cat-input" placeholder="New category name…" autocomplete="off" />
-          <button class="btn btn-sm" onclick="addCustomCat()">Add</button>
+        <div class="prow" style="flex-direction:column;align-items:flex-start;gap:10px;border-top:1px solid var(--bd2)">
+          <div style="font-size:.82rem;font-weight:600;color:var(--t1)">Text Size</div>
+          <div class="fsrow" style="width:100%">
+            <button class="fsbtn" data-sz="13" onclick="setFontSize(13)">XS</button>
+            <button class="fsbtn" data-sz="14" onclick="setFontSize(14)">S</button>
+            <button class="fsbtn on" data-sz="16" onclick="setFontSize(16)">M</button>
+            <button class="fsbtn" data-sz="18" onclick="setFontSize(18)">L</button>
+            <button class="fsbtn" data-sz="20" onclick="setFontSize(20)">XL</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Categories -->
+    <div class="plbl" style="margin-bottom:8px">Categories</div>
+    <div class="pshdr" onclick="toggleSC('sc-cats')">
+      <div class="pshdr-l">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span class="pshdr-title">Manage Categories</span>
+      </div>
+      <span class="scaret" id="caret-sc-cats"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+    </div>
+    <div class="sbody" id="sc-cats" style="margin-bottom:14px">
+      <div class="pcard" style="padding:14px;">
+        <div style="font-size:.78rem;color:var(--t3);margin-bottom:10px;">Add custom food categories for your orders</div>
+        <div class="inline-row">
+          <input class="fi" type="text" id="settings-cat-input" placeholder="New category name…" autocomplete="off">
+          <button class="btn-g" onclick="addCustomCat()" style="white-space:nowrap">Add</button>
         </div>
         <div class="cat-tags" id="cat-tags-list"></div>
       </div>
     </div>
-  </div>
 
-  <!-- Order Sizes -->
-  <div class="sc-group">
-    <div class="sc-head" onclick="toggleSC(this)">
-      <span>📐 Order Sizes</span><span class="sc-chevron">▼</span>
+    <!-- Order Sizes -->
+    <div class="plbl" style="margin-bottom:8px">Order Sizes</div>
+    <div class="pshdr" onclick="toggleSC('sc-sizes')">
+      <div class="pshdr-l">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 17 20 12 15 7"/><polyline points="9 7 4 12 9 17"/></svg>
+        <span class="pshdr-title">Custom Sizes</span>
+      </div>
+      <span class="scaret" id="caret-sc-sizes"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
     </div>
-    <div class="sc-body">
-      <div class="s-row" style="flex-direction:column;align-items:flex-start;gap:.7rem;">
-        <div>
-          <div class="s-row-title">Custom Sizes</div>
-          <div class="s-row-sub">Add your own size options (S M L XL are built-in)</div>
-        </div>
-        <div class="inline-row" style="width:100%">
-          <input type="text" id="settings-size-input" placeholder="e.g. Regular, Jumbo…" maxlength="8" autocomplete="off" />
-          <button class="btn btn-sm" onclick="addCustomSize()">Add</button>
+    <div class="sbody" id="sc-sizes" style="margin-bottom:14px">
+      <div class="pcard" style="padding:14px;">
+        <div style="font-size:.78rem;color:var(--t3);margin-bottom:10px;">Add your own size options (S M L XL are built-in)</div>
+        <div class="inline-row">
+          <input class="fi" type="text" id="settings-size-input" placeholder="e.g. Regular, Jumbo…" maxlength="8" autocomplete="off">
+          <button class="btn-g" onclick="addCustomSize()" style="white-space:nowrap">Add</button>
         </div>
         <div class="cat-tags" id="size-tags-list"></div>
       </div>
     </div>
+
+    <!-- Tax & Tip defaults -->
+    <div class="plbl" style="margin-bottom:8px">Tax &amp; Tip</div>
+    <div class="pcard" style="margin-bottom:14px">
+      <div class="prow">
+        <div class="pinfo"><div class="ptitle">Default GST %</div></div>
+        <input class="fi" type="number" id="def-tax" value="5" min="0" max="100" step="0.5" inputmode="decimal" style="width:72px;text-align:right;margin:0" onchange="saveDefaults()">
+      </div>
+      <div class="prow">
+        <div class="pinfo"><div class="ptitle">Default Tip %</div></div>
+        <input class="fi" type="number" id="def-tip" value="0" min="0" max="100" step="0.5" inputmode="decimal" style="width:72px;text-align:right;margin:0" onchange="saveDefaults()">
+      </div>
+    </div>
+
+    <!-- Data -->
+    <div class="plbl" style="margin-bottom:8px">Data</div>
+    <div class="pcard" style="margin-bottom:14px">
+      <div class="prow ptap" onclick="clearHistory()">
+        <div class="pico" style="background:var(--abg)">
+          <svg viewBox="0 0 24 24" stroke="var(--amber)" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+        </div>
+        <div class="pinfo"><div class="ptitle">Clear History</div><div class="psub">Delete all saved order history</div></div>
+        <div style="color:var(--t3);opacity:.5;display:flex;align-items:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+      <div class="prow ptap" onclick="resetSettings()">
+        <div class="pico" style="background:var(--rbg)">
+          <svg viewBox="0 0 24 24" stroke="var(--red)" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 2v6h6M21.5 22v-6h-6"/><path d="M22 11.5A10 10 0 003.2 7.2M2 12.5a10 10 0 0018.8 4.2"/></svg>
+        </div>
+        <div class="pinfo"><div class="ptitle">Reset All Settings</div><div class="psub">Restore defaults (won't clear history)</div></div>
+        <div style="color:var(--t3);opacity:.5;display:flex;align-items:center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+      </div>
+    </div>
+
+    <div style="text-align:center;padding:8px 0 4px;color:var(--t3);font-size:.62rem;font-weight:600">Your data stays on your device only 🔒</div>
   </div>
+</div>
 
-  <!-- Tax / Tip defaults -->
-  <div class="sc-group">
-    <div class="sc-head" onclick="toggleSC(this)">
-      <span>💰 Tax &amp; Tip Defaults</span><span class="sc-chevron">▼</span>
-    </div>
-    <div class="sc-body">
-      <div class="s-row">
-        <div class="s-row-info">
-          <div class="s-row-title">Default GST %</div>
-        </div>
-        <input type="number" id="def-tax" value="5" min="0" max="100" step="0.5" inputmode="decimal"
-               style="width:70px;text-align:right;margin:0" onchange="saveDefaults()" />
-      </div>
-      <div class="s-row">
-        <div class="s-row-info">
-          <div class="s-row-title">Default Tip %</div>
-        </div>
-        <input type="number" id="def-tip" value="0" min="0" max="100" step="0.5" inputmode="decimal"
-               style="width:70px;text-align:right;margin:0" onchange="saveDefaults()" />
-      </div>
+<!-- ══ TOAST ══ -->
+<div class="toast" id="toast"></div>
+
+<!-- ══ CONFIRM OVERLAY ══ -->
+<div class="cov" id="cov">
+  <div class="cbox">
+    <div class="ctitle" id="c-title">Are you sure?</div>
+    <div class="csub" id="c-sub"></div>
+    <div class="cacts">
+      <button class="ccancel" onclick="closeConfirm(false)">Cancel</button>
+      <button class="cok" id="c-ok" onclick="closeConfirm(true)">Confirm</button>
     </div>
   </div>
+</div>
 
-  <!-- Data -->
-  <div class="sc-group">
-    <div class="sc-head" onclick="toggleSC(this)">
-      <span>🗃 Data</span><span class="sc-chevron">▼</span>
+<!-- ══ TAB BAR ══ -->
+<nav class="tbar"><div class="tbar-in">
+  <button class="titem active" id="tab-order" onclick="switchTab('order')">
+    <div class="tico">
+      <svg viewBox="0 0 24 24"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>
     </div>
-    <div class="sc-body">
-      <div class="s-row">
-        <div class="s-row-info">
-          <div class="s-row-title">Clear History</div>
-          <div class="s-row-sub">Delete all saved order history</div>
-        </div>
-        <button class="btn-danger" onclick="clearHistory()">Clear</button>
-      </div>
-      <div class="s-row">
-        <div class="s-row-info">
-          <div class="s-row-title">Reset All Settings</div>
-          <div class="s-row-sub">Restore defaults (won't clear history)</div>
-        </div>
-        <button class="btn-danger" onclick="resetSettings()">Reset</button>
-      </div>
+    <span class="tlabel">Order</span>
+    <span class="tbadge" id="nav-badge" style="display:none">0</span>
+  </button>
+  <button class="titem" id="tab-history" onclick="switchTab('history')">
+    <div class="tico">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
     </div>
-  </div>
-
-</div><!-- /page-settings -->
-
-<!-- ══ BOTTOM NAV ══ -->
-<nav class="bottom-nav">
-  <button class="nav-tab active" id="tab-order" onclick="switchTab('order')">
-    <span class="nav-icon">🍽️</span>
-    <span>Order</span>
-    <span class="nav-badge" id="nav-badge" style="display:none">0</span>
+    <span class="tlabel">History</span>
   </button>
-  <button class="nav-tab" id="tab-history" onclick="switchTab('history')">
-    <span class="nav-icon">📋</span>
-    <span>History</span>
+  <button class="titem" id="tab-settings" onclick="switchTab('settings')">
+    <div class="tico">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    </div>
+    <span class="tlabel">Settings</span>
   </button>
-  <button class="nav-tab" id="tab-settings" onclick="switchTab('settings')">
-    <span class="nav-icon">⚙️</span>
-    <span>Settings</span>
-  </button>
-</nav>
+</div></nav>
 
 <!-- ══ JAVASCRIPT ══ -->
 <script>
 /* ─── State ─── */
-let orders  = [];
+let orders = [];
 let history_data = JSON.parse(localStorage.getItem('oc_history') || '[]');
 let selectedSize = '';
 
@@ -861,9 +533,10 @@ function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
 function flash(id){
   const el=document.getElementById(id);
   if(!el)return;
-  el.style.borderColor='var(--accent)';
+  el.style.borderColor='var(--blue)';
+  el.style.boxShadow='0 0 0 3px rgba(59,130,246,.18)';
   el.focus();
-  setTimeout(()=>el.style.borderColor='',900);
+  setTimeout(()=>{ el.style.borderColor=''; el.style.boxShadow=''; },900);
 }
 function allCats(){ return [...DEFAULT_CATS,...customCats]; }
 function allSizes(){ return [...DEFAULT_SIZES,...customSizes]; }
@@ -877,36 +550,32 @@ function switchTab(tab){
   if(tab==='history') renderHistory();
 }
 
-
 /* ─── Settings accordion ─── */
-function toggleSC(head){
-  head.parentElement.classList.toggle('collapsed');
+function toggleSC(id){
+  const body=document.getElementById(id);
+  const caret=document.getElementById('caret-'+id);
+  const isOpen=body.classList.toggle('open');
+  if(caret) caret.style.transform=isOpen?'rotate(180deg)':'rotate(0deg)';
 }
 
-/* ─── Dark mode ─── */
-function applyDark(on){
-  document.documentElement.setAttribute('data-theme', on?'dark':'light');
-  document.getElementById('dark-thumb').textContent = on?'🌙':'☀️';
-  localStorage.setItem('oc_dark', on?'1':'');
-}
-
-/* ─── Accent colour ─── */
-function setAccent(name, el){
-  document.documentElement.setAttribute('data-accent', name);
-  document.querySelectorAll('.swatch').forEach(s=>s.classList.remove('active'));
-  el.classList.add('active');
-  localStorage.setItem('oc_accent', name);
+/* ─── Theme ─── */
+function setTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  localStorage.setItem('oc_theme',t);
+  ['dark','soft-dark','light'].forEach(n=>{
+    const el=document.getElementById('th-'+n);
+    if(el) el.classList.toggle('on',n===t);
+  });
 }
 
 /* ─── Font size ─── */
-function setFontSize(fs, el){
-  document.documentElement.style.setProperty('--fs', fs);
-  document.querySelectorAll('.size-opt').forEach(s=>s.classList.remove('active'));
-  el.classList.add('active');
-  localStorage.setItem('oc_fs', fs);
+function setFontSize(sz){
+  document.documentElement.style.fontSize=sz+'px';
+  localStorage.setItem('oc_fs',sz);
+  document.querySelectorAll('.fsbtn').forEach(b=>{
+    b.classList.toggle('on',parseInt(b.dataset.sz)===sz);
+  });
 }
-
-
 
 /* ─── Tax/tip defaults ─── */
 function saveDefaults(){
@@ -926,7 +595,6 @@ function buildCatSelect(){
 function renderCatTags(){
   const el=document.getElementById('cat-tags-list');
   el.innerHTML='';
-  // defaults (not removable)
   DEFAULT_CATS.forEach(c=>{
     const d=document.createElement('div');
     d.className='cat-tag default-tag';
@@ -960,7 +628,7 @@ function removeCustomCat(i){
 function buildSizePills(){
   const container=document.getElementById('size-pills');
   if(!container)return;
-  container.innerHTML='<button class="pill active" data-size="" onclick="selectSize(this)">–</button>';
+  container.innerHTML='<button class="pill active" data-size="" onclick="selectSize(this)">None</button>';
   allSizes().forEach(s=>{
     const b=document.createElement('button');
     b.className='pill';
@@ -1002,7 +670,7 @@ function removeCustomSize(i){
   buildSizePills(); renderSizeTags();
 }
 
-/* ─── Size pill selector (order page) ─── */
+/* ─── Size pill selector ─── */
 function selectSize(btn){
   document.querySelectorAll('#size-pills .pill').forEach(p=>p.classList.remove('active'));
   btn.classList.add('active');
@@ -1015,8 +683,8 @@ function addItem(){
   const cat   = document.getElementById('item-cat').value;
   const price = parseFloat(document.getElementById('item-price').value);
   const qty   = Math.max(1, parseInt(document.getElementById('item-qty').value)||1);
-  if(!name)                     { flash('item-name');  return; }
-  if(isNaN(price)||price<0)     { flash('item-price'); return; }
+  if(!name)                 { flash('item-name');  return; }
+  if(isNaN(price)||price<0) { flash('item-price'); return; }
   orders.push({id:Date.now(), name, cat, size:selectedSize, price, qty});
   renderList(); recalc();
   document.getElementById('item-name').value  ='';
@@ -1026,7 +694,7 @@ function addItem(){
   updateBillVisibility();
 }
 
-/* ─── Bill card visibility & collapse ─── */
+/* ─── Bill card visibility ─── */
 function updateBillVisibility(){
   const card=document.getElementById('bill-card');
   if(orders.length>0){
@@ -1044,7 +712,10 @@ function toggleBill(){
 function renderList(){
   const ul=document.getElementById('order-list');
   if(!orders.length){
-    ul.innerHTML=`<li class="empty-state"><span class="e-icon">🍽️</span>No items yet.</li>`;
+    ul.innerHTML=`<li class="empty-state">
+      <span class="e-icon"><svg viewBox="0 0 24 24"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg></span>
+      <p>No items yet.<br>Add your first item above.</p>
+    </li>`;
     return;
   }
   ul.innerHTML=orders.map(o=>{
@@ -1062,7 +733,7 @@ function renderList(){
         <span class="qty-val">${o.qty}</span>
         <button class="qty-btn" onclick="changeQty(${o.id},+1)">+</button>
       </div>
-      <div style="display:flex;align-items:center;gap:.2rem;flex-shrink:0">
+      <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
         <span class="item-price">${fmt(o.price*o.qty)}</span>
         <button class="item-del" onclick="removeItem(${o.id})" title="Remove">✕</button>
       </div>
@@ -1088,10 +759,10 @@ function recalc(){
   const taxPct = parseFloat(document.getElementById('tax-pct').value)||0;
   const tipPct = parseFloat(document.getElementById('tip-pct').value)||0;
   const tax=sub*taxPct/100, tip=sub*tipPct/100, grand=sub+tax+tip;
-  document.getElementById('t-sub').textContent   =fmt(sub);
-  document.getElementById('t-tax').textContent   =fmt(tax);
-  document.getElementById('t-tip').textContent   =fmt(tip);
-  document.getElementById('t-grand').textContent =fmt(grand);
+  document.getElementById('t-sub').textContent    =fmt(sub);
+  document.getElementById('t-tax').textContent    =fmt(tax);
+  document.getElementById('t-tip').textContent    =fmt(tip);
+  document.getElementById('t-grand').textContent  =fmt(grand);
   document.getElementById('t-tax-pct').textContent=taxPct;
   document.getElementById('t-tip-pct').textContent=tipPct;
   const totalQty=orders.reduce((s,o)=>s+o.qty,0);
@@ -1099,7 +770,6 @@ function recalc(){
   document.getElementById('chip-qty').textContent  =totalQty;
   document.getElementById('chip-sub').textContent  =fmt(sub);
   document.getElementById('verdict').style.display ='none';
-  // badge
   const badge=document.getElementById('nav-badge');
   const hbadge=document.getElementById('order-count-badge');
   if(orders.length){
@@ -1108,7 +778,6 @@ function recalc(){
   } else {
     badge.style.display='none';hbadge.style.display='none';
   }
-  // bill head total
   document.getElementById('bill-head-total').textContent=orders.length?fmt(grand):'';
 }
 
@@ -1171,7 +840,10 @@ function saveToHistory(){
 function renderHistory(){
   const el=document.getElementById('hist-list');
   if(!history_data.length){
-    el.innerHTML=`<div class="hist-empty"><span class="he-icon">📋</span>No saved orders yet.<br>Add items and tap Save on the Order tab.</div>`;
+    el.innerHTML=`<div class="hist-empty">
+      <span class="he-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>
+      <p>No saved orders yet.<br>Add items and tap Save on the Order tab.</p>
+    </div>`;
     return;
   }
   el.innerHTML=history_data.map((h,idx)=>`
@@ -1188,13 +860,13 @@ function renderHistory(){
           const sz=o.size?` [${o.size}]`:'';
           return `<div class="hi-row"><span>${escHtml(o.name+sz)} × ${o.qty}</span><span>${fmt(o.price*o.qty)}</span></div>`;
         }).join('')}
-        <div class="hi-row" style="margin-top:.4rem;padding-top:.4rem;border-top:1px dashed var(--line)">
+        <div class="hi-row" style="margin-top:6px;padding-top:6px;border-top:1px solid var(--bd2)">
           <span>Tax (${h.taxPct}%) + Tip (${h.tipPct}%)</span><span>${fmt(h.tax+h.tip)}</span>
         </div>
       </div>
       <div class="hi-actions">
-        <button class="btn-sm" onclick="reloadOrder(${idx})">♻️ Reload</button>
-        <button class="btn-danger" onclick="deleteHistory(${idx})">🗑 Delete</button>
+        <button class="btn-g" onclick="reloadOrder(${idx})">♻️ Reload</button>
+        <button class="btn-d" onclick="deleteHistory(${idx})">🗑 Delete</button>
       </div>
     </div>`).join('');
 }
@@ -1256,11 +928,10 @@ ${rows||'  (no items)'}
   w.print();
 }
 
-/* ─── Settings: reset ─── */
+/* ─── Reset settings ─── */
 function resetSettings(){
   if(!confirm('Reset all appearance & default settings?'))return;
-  localStorage.removeItem('oc_dark');
-  localStorage.removeItem('oc_accent');
+  localStorage.removeItem('oc_theme');
   localStorage.removeItem('oc_fs');
   localStorage.removeItem('oc_tax');
   localStorage.removeItem('oc_tip');
@@ -1278,38 +949,16 @@ document.getElementById('settings-size-input').addEventListener('keydown',e=>{if
 
 /* ─── Init ─── */
 (function init(){
-  // Dark
-  const dark=localStorage.getItem('oc_dark');
-  if(dark){
-    document.documentElement.setAttribute('data-theme','dark');
-    document.getElementById('dark-toggle').checked=true;
-    document.getElementById('dark-thumb').textContent='🌙';
-  }
-  // Accent
-  const accent=localStorage.getItem('oc_accent');
-  if(accent){
-    document.documentElement.setAttribute('data-accent',accent);
-    document.querySelectorAll('.swatch').forEach(s=>{
-      s.classList.toggle('active',s.dataset.accent===accent);
-    });
-  }
-  // Font size
-  const fs=localStorage.getItem('oc_fs');
-  if(fs){
-    document.documentElement.style.setProperty('--fs',fs);
-    document.querySelectorAll('.size-opt').forEach(s=>{
-      s.classList.toggle('active',s.dataset.fs===fs);
-    });
-  }
-
-  // Tax/tip defaults
+  const theme=localStorage.getItem('oc_theme')||'dark';
+  setTheme(theme);
+  const fs=parseInt(localStorage.getItem('oc_fs'))||16;
+  setFontSize(fs);
   const tax=localStorage.getItem('oc_tax');
   const tip=localStorage.getItem('oc_tip');
   if(tax) document.getElementById('tax-pct').value=tax;
   if(tip) document.getElementById('tip-pct').value=tip;
   if(tax) document.getElementById('def-tax').value=tax;
   if(tip) document.getElementById('def-tip').value=tip;
-
   buildCatSelect();
   renderCatTags();
   buildSizePills();
